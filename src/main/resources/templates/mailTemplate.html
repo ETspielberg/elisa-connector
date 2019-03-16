@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Anschaffungsvorschlag</title>
+    <style>
+        table, th, td {
+            text-align: left;
+            font-weight: normal;
+        }
+        .caption {
+            font-weight: bold;
+        }
+        .text {
+            color: black;
+        }
+        .title{
+            color: #004c93
+        }
+    </style>
+</head>
+<body>
+<h1 class="title">Anschaffungsvorschlag</h1>
+<p class="text">Es gibt einen neuen Anschaffungsvorschlag</p>
+<table>
+    <tr>
+        <th class="caption">Titel</th>
+        <th><span th:text="${title}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Verfasser/Hrsg.</th>
+        <th> <span th:text="${contributor}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Auflage</th>
+        <th><span th:text="${edition}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Verlag</th>
+        <th><span th:text="${publisher}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Erscheinungsjahr</th>
+        <th><span th:text="${year}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">ISBN</th>
+        <th><span th:text="${isbn}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Preis</th>
+        <th><span th:text="${price}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Fachrichtung</th>
+        <th><span th:text="${subjectarea}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Woher stammt Ihre Literaturangabe?</th>
+        <th><span th:text="${source}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Bemerkung</th>
+        <th><span th:text="${comment}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Name</th>
+        <th><span th:text="${name}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Benutzernummer</th>
+        <th><span th:text="${libraryaccountNumber}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">E-Mail-Adresse</th>
+        <th><span th:text="${emailAddress}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Benachrichtigung über die Kaufentscheidung</th>
+        <th><span th:text="${response}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Anschaffung für den Campus Duisburg</th>
+        <th><span th:text="${duisburg}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Anschaffung für den Campus Essen</th>
+        <th><span th:text="${essen}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Vormerkung mit Bereitstellungsort</th>
+        <th><span th:text="${requestPlace}"></span></th>
+    </tr>
+</table>
+
+<p>
+    Der Titel konnte nicht in ELi:SA eingetragen werden. Ursache:
+</p>
+<p><span th:text="${reason}"></span></p>
+
+</body>
+</html>
