@@ -59,45 +59,24 @@ public class ElisaController {
         this.mailContentBuilder = mailContentBuilder;
     }
 
-    // endpoint to process the data from the html form
-    @PostMapping("/sendEav")
-    public ResponseEntity<?> receiveEav(@RequestParam String isbn,
-                                        @RequestParam String title,
-                                        @RequestParam String contributor,
-                                        @RequestParam String edition,
-                                        @RequestParam String publisher,
-                                        @RequestParam String year,
-                                        @RequestParam String price,
-                                        @RequestParam String subjectarea,
-                                        @RequestParam String source,
-                                        @RequestParam String comment,
-                                        @RequestParam String name,
-                                        @RequestParam String libraryaccountNumber,
-                                        @RequestParam String emailAddress,
-                                        @RequestParam boolean response,
-                                        @RequestParam boolean essen,
-                                        @RequestParam boolean duisburg,
-                                        @RequestParam String requestPlace) {
-        // for an easier handling store all paramters in the POJO RequestData
-        RequestData requestData = new RequestData(isbn, title, contributor, edition, publisher, year, price,
-                subjectarea, source, comment, name, libraryaccountNumber, emailAddress, response, essen, duisburg, requestPlace);
-
+    @PostMapping("/receiveEav")
+    public ResponseEntity<?> receiveEav(@RequestBody RequestData requestData) {
         // ISBN regular expression test for ISBN
         Pattern patternISBN = Pattern.compile("^(97([89]))?\\d{9}(\\d|X)$");
-        if (isbn.contains("-"))
-            isbn = isbn.replace("-", "");
+        if (requestData.isbn.contains("-"))
+            requestData.isbn = requestData.isbn.replace("-", "");
 
         // if it is ISBN, try to upload it to elisa
-        if (patternISBN.matcher(isbn).find()) {
+        if (patternISBN.matcher(requestData.isbn).find()) {
             log.info("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
 
             // try to get the corresponding user account from the settings backend. If no user id can be obtained, send the email
             String userID;
             try {
-                userID = subjectClient.getElisaAccount(subjectarea);
+                userID = subjectClient.getElisaAccount(requestData.subjectarea);
             } catch (Exception e) {
                 sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA account konnte nicht gefunden werden");
-                log.warn("could not retrieve the userID for subjectArea " + subjectarea);
+                log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
                 return ResponseEntity.badRequest().body("could not retreive Elisa account id");
             }
             if (userID == null)
@@ -108,26 +87,26 @@ public class ElisaController {
             // prepare isbns for sending to elisa
             CreateListRequest createListRequest = new CreateListRequest(userID, "Anschaffungsvorschlag");
 
-            TitleData requestedTitle = new TitleData(isbn);
+            TitleData requestedTitle = new TitleData(requestData.isbn);
 
             // prepare the intern note with the data about the user and his comments. Add the email for notification.
-            String noteIntern = name + " (" + emailAddress + "): " + comment + "\n Literaturangebe von: " + source;
-            if (response) {
+            String noteIntern = requestData.name + " (" + requestData.emailAddress + "): " + requestData.comment + "\n Literaturangebe von: " + requestData.source;
+            if (requestData.response) {
                 noteIntern += "\n Bitte den Nutzer benachrichtigen.";
             }
             requestedTitle.setNotizIntern(noteIntern);
 
             // prepare the library note
             String note = "";
-            if (essen) {
+            if (requestData.essen) {
                 note += "E :1, ";
             }
-            if (duisburg) {
-                if (essen)
+            if (requestData.duisburg) {
+                if (requestData.essen)
                     note += "";
                 note += "D :1,  , ";
             }
-            note += "VM für " + libraryaccountNumber + " (" + name + ") in " + requestPlace;
+            note += "VM für " + requestData.libraryaccountNumber + " (" + requestData.name + ") in " + requestData.requestPlace;
             requestedTitle.setNotiz(note);
 
             // prepare the creation request
@@ -151,10 +130,11 @@ public class ElisaController {
                         log.warn("could not create list. Reason: " + createListResponse.getErrorMessage() );
                         return ResponseEntity.badRequest().body(createListResponse.getErrorMessage());
                     }
-                // if authentication fails, send email to standard address
+                    // if authentication fails, send email to standard address
                 } else {
                     log.error("elisa authentication failed. Reason: " + authenticationResponse.getErrorMessage());
-                    sendMail(defaultEavEamil, requestData, "Die ELi:SA -Authentifizierung ist fehlgeschlagen");                    return ResponseEntity.badRequest().body("no token received");
+                    sendMail(defaultEavEamil, requestData, "Die ELi:SA -Authentifizierung ist fehlgeschlagen");
+                    return ResponseEntity.badRequest().body("no token received");
                 }
 
             } catch (Exception e) {
@@ -169,15 +149,52 @@ public class ElisaController {
         }
     }
 
+    // endpoint to process the data from the html form
+    @PostMapping("/sendEav")
+    public ResponseEntity<?> receiveEav(@RequestParam String isbn,
+                                        @RequestParam String title,
+                                        @RequestParam String contributor,
+                                        @RequestParam String edition,
+                                        @RequestParam String publisher,
+                                        @RequestParam String year,
+                                        @RequestParam String price,
+                                        @RequestParam String subjectarea,
+                                        @RequestParam String source,
+                                        @RequestParam String comment,
+                                        @RequestParam String name,
+                                        @RequestParam String libraryaccountNumber,
+                                        @RequestParam String emailAddress,
+                                        @RequestParam boolean response,
+                                        @RequestParam boolean essen,
+                                        @RequestParam boolean duisburg,
+                                        @RequestParam String requestPlace) {
+        // for an easier handling store all parameters in the POJO RequestData
+        RequestData requestData = new RequestData(isbn, title, contributor, edition, publisher, year, price,
+                subjectarea, source, comment, name, libraryaccountNumber, emailAddress, response, essen, duisburg, requestPlace);
+        return receiveEav(requestData);
+
+    }
+
     @PostMapping("/sendToElisa")
-    public ResponseEntity<?> sendToElisa(@RequestBody List<Title> titles, @RequestBody String userID) {
+    public ResponseEntity<?> sendToElisa(
+            @RequestBody List<Title> titles,
+            @RequestBody String userID,
+            @RequestBody String notepadName,
+            @RequestBody String note,
+            @RequestBody String noteIntern) {
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(callerID, secret);
         AuthenticationResponse authenticationResponse = elisaClient.getToken(authenticationRequest);
-        CreateListRequest createListRequest = new CreateListRequest(userID, "Anschaffungsvorschlag");
+        if (authenticationResponse.getErrorcode() != 0)
+            return ResponseEntity.badRequest().body(authenticationResponse.getErrorMessage());
+        CreateListRequest createListRequest = new CreateListRequest(userID, notepadName);
         createListRequest.setToken(authenticationResponse.getToken());
         createListRequest.setTitleList(titles);
-
-        return ResponseEntity.accepted().build();
+        CreateListResponse createListResponse = elisaClient.createList(createListRequest);
+        if (createListResponse.getErrorcode() == 0)
+            return ResponseEntity.accepted().build();
+        else if (createListResponse.getErrorcode() == 10 || createListResponse.getErrorcode() == 11)
+            return ResponseEntity.badRequest().body(createListResponse);
+        return ResponseEntity.badRequest().body(createListResponse.getErrorMessage());
     }
 
     private void sendMail(String to, RequestData requestData, String reason) {
