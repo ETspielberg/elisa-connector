@@ -200,7 +200,7 @@ public class ElisaController {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
             messageHelper.setFrom("eike.spielberg@uni-due.de");
-            messageHelper.setTo(to);y
+            messageHelper.setTo(to);
             String text = mailContentBuilder.build(requestData, reason);
             messageHelper.setText(text, true);
             messageHelper.setSubject("Anschaffungsvorschlag");
