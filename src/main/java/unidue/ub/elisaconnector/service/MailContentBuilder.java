@@ -50,7 +50,7 @@ public class MailContentBuilder {
 
     public String buildNotification(String name) {
         Context context = new Context();
-        context.setVariable("reason", name);
+        context.setVariable("name", name);
         return templateEngine.process("notificationMailTemplate", context);
     }
 }

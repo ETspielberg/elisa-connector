@@ -1,11 +1,14 @@
 package unidue.ub.elisaconnector.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class TitleData {
 
     private String isbn;
 
     private String notiz;
 
+    @JsonProperty("notiz_intern")
     private String notizIntern;
 
     public TitleData(String isbn) {
