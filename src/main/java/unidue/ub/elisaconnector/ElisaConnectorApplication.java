@@ -21,7 +21,8 @@ public class ElisaConnectorApplication  extends WebSecurityConfigurerAdapter {
         http.httpBasic()
                 .and()
                 .authorizeRequests()
-                .antMatchers("/sendEav").permitAll().and()
+                .antMatchers("/sendEav", "/receiveEav").permitAll()
+                .antMatchers("/sendToElisa").authenticated().and()
                 .csrf().disable();
     }
 
