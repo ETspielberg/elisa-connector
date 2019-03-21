@@ -47,4 +47,10 @@ public class MailContentBuilder {
         context.setVariable("requestPlace", requestData.requestPlace);
         return templateEngine.process("mailTemplate", context);
     }
+
+    public String buildNotification(String name) {
+        Context context = new Context();
+        context.setVariable("reason", name);
+        return templateEngine.process("notificationMailTemplate", context);
+    }
 }

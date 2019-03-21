@@ -123,6 +123,7 @@ public class ElisaController {
                     CreateListResponse createListResponse = elisaClient.createList(createListRequest);
                     if (createListResponse.getErrorcode() == 0) {
                         log.info("successfully create elisa list");
+                        sendNotificationMail(userID, "FachreferentIn");
                         return ResponseEntity.ok("List created");
                     } else {
                         // if creation fails, send email to standard address
@@ -179,9 +180,7 @@ public class ElisaController {
     public ResponseEntity<?> sendToElisa(
             @RequestBody List<Title> titles,
             @RequestBody String userID,
-            @RequestBody String notepadName,
-            @RequestBody String note,
-            @RequestBody String noteIntern) {
+            @RequestBody String notepadName) {
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(callerID, secret);
         AuthenticationResponse authenticationResponse = elisaClient.getToken(authenticationRequest);
         if (authenticationResponse.getErrorcode() != 0)
@@ -205,6 +204,19 @@ public class ElisaController {
             String text = mailContentBuilder.build(requestData, reason);
             messageHelper.setText(text, true);
             messageHelper.setSubject("Anschaffungsvorschlag");
+        };
+        emailSender.send(messagePreparator);
+        log.info("sent email to " + to);
+    }
+
+    private void sendNotificationMail(String to, String name) {
+        MimeMessagePreparator messagePreparator = mimeMessage -> {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
+            messageHelper.setFrom("eike.spielberg@uni-due.de");
+            messageHelper.setTo(to);
+            String text = mailContentBuilder.buildNotification(name);
+            messageHelper.setText(text, true);
+            messageHelper.setSubject("neuer Anschaffungsvorschlag in Elisa");
         };
         emailSender.send(messagePreparator);
         log.info("sent email to " + to);
