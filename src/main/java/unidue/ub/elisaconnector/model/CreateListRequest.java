@@ -50,6 +50,10 @@ public class CreateListRequest {
         this.titleList = titleList;
     }
 
+    /**
+     * adds a Title to the list of titles.
+     * @param title the Title object to be added
+     */
     public void addTitle(Title title) {
         this.titleList.add(title);
     }

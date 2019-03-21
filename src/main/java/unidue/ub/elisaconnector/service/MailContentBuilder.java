@@ -16,6 +16,13 @@ public class MailContentBuilder {
         this.templateEngine = templateEngine;
     }
 
+    /**
+     *  generate a mail body to be send, if no entry in ELi:SA could be created
+     * @param requestData the data from the web form
+     * @param reason the reason, why no entry in ELi:SA could be created.
+     * @return the mail body in html.
+     */
+
     public String build(RequestData requestData, String reason) {
         Context context = new Context();
         context.setVariable("reason", reason);

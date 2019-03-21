@@ -24,6 +24,10 @@ public class CreateListResponse {
         this.isbnWithError = isbnWithError;
     }
 
+    /**
+     * returns a speaking version of the error code
+     * @return errorMessage the error message related to the error code
+     */
     public String getErrorMessage() {
         switch (errorcode) {
             case 0: return "kein Fehler";

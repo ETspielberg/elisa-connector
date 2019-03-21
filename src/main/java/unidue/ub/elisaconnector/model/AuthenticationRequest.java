@@ -17,6 +17,12 @@ public class AuthenticationRequest {
 
     private String hash;
 
+    /**
+     * Request object to authentificate at ELi:SA. The timestamps and hash are calculated by default.
+     *
+     * @param callerID the caller ID provided by the hbz
+     * @param secret the secrtet provided by the hbz
+     */
     public AuthenticationRequest(String callerID, String secret) {
         this.callerID = callerID;
         this.timestamp = Instant.now().toString();
