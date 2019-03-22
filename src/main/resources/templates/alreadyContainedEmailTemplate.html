@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Neuer Anschaffungsvorschlag</title>
+    <style>
+        table, th, td {
+            text-align: left;
+            font-weight: normal;
+        }
+        .caption {
+            font-weight: bold;
+        }
+        .text {
+            color: black;
+        }
+        .title{
+            color: #004c93
+        }
+    </style>
+</head>
+<body>
+<h1 class="title">Anschaffungsvorschlag</h1>
+<p> Hallo <span th:text="${receiver}"></span>,</p>
+<p class="text">Ein Titel, der berits auf der Merliste "Anschffungsvorschläge" enthalten ist, wurde ein weiteres Mal vorgeschlagen:</p>
+<p><span th:text="${contributor}"></span>: "<span th:text="${title}"></span>" (ISBN: <span th:text="${isbn}"></span>) </p>
+<p> Dieser Titel wurde von <span th:text="${name}"></span> (<span th:text="${libraryaccountNumber}"></span>) vorgeschlagen mit folgenden Zusatzangaben vorgeschlage:</p>
+<table>
+    <<tr>
+        <th class="caption">Woher stammt Ihre Literaturangabe?</th>
+        <th><span th:text="${source}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Bemerkung</th>
+        <th><span th:text="${comment}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">E-Mail-Adresse</th>
+        <th><span th:text="${emailAddress}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Benachrichtigung über die Kaufentscheidung</th>
+        <th><span th:text="${response}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Anschaffung für den Campus Duisburg</th>
+        <th><span th:text="${duisburg}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Anschaffung für den Campus Essen</th>
+        <th><span th:text="${essen}"></span></th>
+    </tr>
+    <tr>
+        <th class="caption">Vormerkung mit Bereitstellungsort</th>
+        <th><span th:text="${requestPlace}"></span></th>
+    </tr>
+</table>
+
+<a href="https://elisa.hbz-nrw.de/notepads"><strong>Hier</strong></a> geht es direkt zu den ELi:SA-Merklisten.
+<p>Viele Grüße,</p>
+<p>Der Fachref-Assistent</p>
+
+</body>
+</html>

@@ -55,6 +55,24 @@ public class MailContentBuilder {
         return templateEngine.process("mailTemplate", context);
     }
 
+    public String buildAlreadyContained(RequestData requestData, String name) {
+        Context context = new Context();
+        context.setVariable("receiver", name);
+        context.setVariable("isbn", requestData.isbn);
+        context.setVariable("title", requestData.title);
+        context.setVariable("contributor", requestData.contributor);
+        context.setVariable("comment", requestData.comment);
+        context.setVariable("source", requestData.source);
+        context.setVariable("name", requestData.name);
+        context.setVariable("libraryaccountNumber", requestData.libraryaccountNumber);
+        context.setVariable("emailAddress", requestData.emailAddress);
+        context.setVariable("response", requestData.response);
+        context.setVariable("essen", requestData.essen);
+        context.setVariable("duisburg", requestData.duisburg);
+        context.setVariable("requestPlace", requestData.requestPlace);
+        return templateEngine.process("alreadyContainedEmailTemplate", context);
+    }
+
     public String buildNotification(String name) {
         Context context = new Context();
         context.setVariable("name", name);

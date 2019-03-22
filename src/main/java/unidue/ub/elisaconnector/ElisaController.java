@@ -77,10 +77,10 @@ public class ElisaController {
             } catch (Exception e) {
                 sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA account konnte nicht gefunden werden");
                 log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
-                return ResponseEntity.badRequest().body("could not retreive Elisa account id");
+                return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
             if (userID == null)
-                return ResponseEntity.badRequest().body("could not retreive Elisa account id");
+                return ResponseEntity.ok().body("could not retreive Elisa account id");
 
             log.info("setting elisa id to " + userID);
 
@@ -125,23 +125,26 @@ public class ElisaController {
                         log.info("successfully create elisa list");
                         sendNotificationMail(userID, "FachreferentIn");
                         return ResponseEntity.ok("List created");
+                    } else if (createListResponse.getErrorcode() == 4) {
+                        sendAlreadyContainedMail(userID, requestData, "FachreferentIn");
+                        return ResponseEntity.ok().body(createListResponse.getErrorMessage());
                     } else {
                         // if creation fails, send email to standard address
                         sendMail(defaultEavEamil, requestData, "ELi:SA-Antwort: " + createListResponse.getErrorMessage());
                         log.warn("could not create list. Reason: " + createListResponse.getErrorMessage() );
-                        return ResponseEntity.badRequest().body(createListResponse.getErrorMessage());
+                        return ResponseEntity.ok().body(createListResponse.getErrorMessage());
                     }
                     // if authentication fails, send email to standard address
                 } else {
                     log.error("elisa authentication failed. Reason: " + authenticationResponse.getErrorMessage());
                     sendMail(defaultEavEamil, requestData, "Die ELi:SA -Authentifizierung ist fehlgeschlagen");
-                    return ResponseEntity.badRequest().body("no token received");
+                    return ResponseEntity.ok().body("no token received");
                 }
 
             } catch (Exception e) {
                 log.error("could not connect to elisa API");
                 sendMail(defaultEavEamil, requestData, "ELi:SA API nicht erreichbar");
-                return ResponseEntity.badRequest().body("could not connect to elisa API");
+                return ResponseEntity.ok().body("could not connect to elisa API");
             }
         } else {
             log.warn("no isbn given");
@@ -217,6 +220,19 @@ public class ElisaController {
             String text = mailContentBuilder.buildNotification(name);
             messageHelper.setText(text, true);
             messageHelper.setSubject("neuer Anschaffungsvorschlag in Elisa");
+        };
+        emailSender.send(messagePreparator);
+        log.info("sent email to " + to);
+    }
+
+    private void sendAlreadyContainedMail(String to, RequestData requestData, String name) {
+        MimeMessagePreparator messagePreparator = mimeMessage -> {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
+            messageHelper.setFrom("eike.spielberg@uni-due.de");
+            messageHelper.setTo(to);
+            String text = mailContentBuilder.buildAlreadyContained(requestData, name);
+            messageHelper.setText(text, true);
+            messageHelper.setSubject("Anschaffungsvorschlag");
         };
         emailSender.send(messagePreparator);
         log.info("sent email to " + to);
