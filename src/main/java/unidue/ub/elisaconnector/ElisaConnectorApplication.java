@@ -10,12 +10,17 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @SpringBootApplication
 @EnableFeignClients
 @EnableEurekaClient
-public class ElisaConnectorApplication  extends WebSecurityConfigurerAdapter {
+public class ElisaConnectorApplication extends WebSecurityConfigurerAdapter {
 
     public static void main(String[] args) {
         SpringApplication.run(ElisaConnectorApplication.class, args);
     }
 
+    /**
+     *
+     * @param http HTTP security object from the Spring framework
+     * @throws Exception
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic()

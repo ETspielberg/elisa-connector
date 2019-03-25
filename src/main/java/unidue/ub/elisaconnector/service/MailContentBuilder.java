@@ -22,7 +22,6 @@ public class MailContentBuilder {
      * @param reason the reason, why no entry in ELi:SA could be created.
      * @return the mail body in html.
      */
-
     public String build(RequestData requestData, String reason) {
         Context context = new Context();
         context.setVariable("reason", reason);
@@ -55,6 +54,12 @@ public class MailContentBuilder {
         return templateEngine.process("mailTemplate", context);
     }
 
+    /**
+     *  generate a mail body to be send, to notify the subject librarian, that an item has been submitted, which is already on the list
+     * @param requestData the data from the web form
+     * @param name name of the subject librarian
+     * @return the mail body in html.
+     */
     public String buildAlreadyContained(RequestData requestData, String name) {
         Context context = new Context();
         context.setVariable("receiver", name);
@@ -73,6 +78,11 @@ public class MailContentBuilder {
         return templateEngine.process("alreadyContainedEmailTemplate", context);
     }
 
+    /**
+     *  generate a mail body to be send, to notify the
+     * @param name name of the subject librarian
+     * @return the mail body in html.
+     */
     public String buildNotification(String name) {
         Context context = new Context();
         context.setVariable("name", name);

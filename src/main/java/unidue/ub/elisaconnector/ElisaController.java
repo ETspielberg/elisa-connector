@@ -20,7 +20,9 @@ import unidue.ub.elisaconnector.service.MailContentBuilder;
 import java.util.List;
 import java.util.regex.Pattern;
 
-
+/**
+ * provides endpoints to wrap the ELi:SA API.
+ */
 @Controller
 public class ElisaController {
 
@@ -50,7 +52,13 @@ public class ElisaController {
 
     private final MailContentBuilder mailContentBuilder;
 
-
+    /**
+     *  constructor injection of beans
+     * @param elisaClient the ELi:SA Feign client
+     * @param subjectClient tje subject Feign client
+     * @param emailSender the email sender
+     * @param mailContentBuilder the thymeleaf template email builder
+     */
     @Autowired
     public ElisaController(ElisaClient elisaClient, SubjectClient subjectClient, JavaMailSender emailSender, MailContentBuilder mailContentBuilder) {
         this.elisaClient = elisaClient;
@@ -59,6 +67,11 @@ public class ElisaController {
         this.mailContentBuilder = mailContentBuilder;
     }
 
+    /**
+     * endppoint to receive the data from the web form as json object.
+     * @param requestData the submission from the form (JSON-encoded)
+     * @return a status message
+     */
     @PostMapping("/receiveEav")
     public ResponseEntity<?> receiveEav(@RequestBody RequestData requestData) {
         // ISBN regular expression test for ISBN
@@ -153,6 +166,27 @@ public class ElisaController {
         }
     }
 
+    /**
+     * endppoint to receive the data from the web form as form fields.
+     * @param isbn the isbn of the desired title
+     * @param title the title
+     * @param contributor the author or editor
+     * @param edition  the edition
+     * @param publisher the publisher
+     * @param year the year of publication
+     * @param price the price
+     * @param subjectarea the subjectarea this book belongs to
+     * @param source the source of the bibliographic information (lecture etc.)
+     * @param comment a field for comments
+     * @param name the name of the requestor
+     * @param libraryaccountNumber the user id of the requestor
+     * @param emailAddress the email address of the requestor
+     * @param response boolean, true if the requestor wants to be notified about the purchase decision
+     * @param essen boolean, are items wanted for Essen?
+     * @param duisburg boolean, are items wanted for Duisburg?
+     * @param requestPlace if a request is desired, where should it be (Essen or Duisburg)?
+     * @return
+     */
     // endpoint to process the data from the html form
     @PostMapping("/sendEav")
     public ResponseEntity<?> receiveEav(@RequestParam String isbn,
@@ -179,6 +213,13 @@ public class ElisaController {
 
     }
 
+    /**
+     * direkt wrapper for the ELi:SA API. handles authentication etc. credentials remain stored in the secured config server.
+     * @param titles List of titles to be send to ELi:SA (JSON encoded)
+     * @param userID the userID whose notepad the items shall be attached
+     * @param notepadName the name of the notapad the items shall be stored in
+     * @return status message
+     */
     @PostMapping("/sendToElisa")
     public ResponseEntity<?> sendToElisa(
             @RequestBody List<Title> titles,
