@@ -92,8 +92,10 @@ public class ElisaController {
                 log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
-            if (userID == null)
+            if (userID == null || "".equals(userID)) {
+                sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA account konnte nicht gefunden werden");
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
+            }
 
             log.info("setting elisa id to " + userID);
 
