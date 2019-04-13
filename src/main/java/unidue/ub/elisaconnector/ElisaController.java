@@ -17,7 +17,7 @@ import unidue.ub.elisaconnector.client.SubjectClient;
 import unidue.ub.elisaconnector.model.*;
 import unidue.ub.elisaconnector.service.MailContentBuilder;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
@@ -90,12 +90,13 @@ public class ElisaController {
             try {
                 userID = subjectClient.getElisaAccount(requestData.subjectarea);
             } catch (Exception e) {
-                sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA account konnte nicht gefunden werden");
+                sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
                 log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
             if (userID == null || "".equals(userID)) {
-                sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA account konnte nicht gefunden werden");
+                log.info("found no user id for subject area " + requestData.subjectarea);
+                sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
 
@@ -228,23 +229,20 @@ public class ElisaController {
     /**
      * direkt wrapper for the ELi:SA API. handles authentication etc. credentials remain stored in the secured config server.
      *
-     * @param titles      List of titles to be send to ELi:SA (JSON encoded)
-     * @param userID      the userID whose notepad the items shall be attached
-     * @param notepadName the name of the notapad the items shall be stored in
+     * @param protokollToElisaRequest      A container object holding the list of titles to be send to ELi:SA, the notepad name and the elisa user ID
      * @return status message
      */
     @PostMapping("/sendToElisa")
     public ResponseEntity<?> sendToElisa(
-            @RequestBody List<Title> titles,
-            @RequestBody String userID,
-            @RequestBody String notepadName) {
+            @RequestBody ProtokollToElisaRequest protokollToElisaRequest) {
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(callerID, secret);
         AuthenticationResponse authenticationResponse = elisaClient.getToken(authenticationRequest);
         if (authenticationResponse.getErrorcode() != 0)
             return ResponseEntity.badRequest().body(authenticationResponse.getErrorMessage());
-        CreateListRequest createListRequest = new CreateListRequest(userID, notepadName);
+        CreateListRequest createListRequest = new CreateListRequest(protokollToElisaRequest.getUserID(), protokollToElisaRequest.getNotepadName());
+        log.info("creating elisa request for user " + protokollToElisaRequest.getUserID() + " and notepad " +  protokollToElisaRequest.getNotepadName());
         createListRequest.setToken(authenticationResponse.getToken());
-        createListRequest.setTitleList(titles);
+        createListRequest.setTitleList(Arrays.asList(protokollToElisaRequest.getTitles()));
         CreateListResponse createListResponse = elisaClient.createList(createListRequest);
         if (createListResponse.getErrorcode() == 0)
             return ResponseEntity.accepted().build();

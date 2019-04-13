@@ -11,6 +11,9 @@ public class TitleData {
     @JsonProperty("notiz_intern")
     private String notizIntern;
 
+    public TitleData() {
+    }
+
     public TitleData(String isbn) {
         this.isbn = isbn;
     }

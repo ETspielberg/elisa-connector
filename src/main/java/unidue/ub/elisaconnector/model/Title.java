@@ -4,6 +4,9 @@ public class Title {
 
     private TitleData title;
 
+    public Title() {
+    }
+
     public Title(TitleData title) {
         this.title = title;
     }
