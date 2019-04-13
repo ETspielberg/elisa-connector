@@ -145,8 +145,9 @@ public class ElisaController {
                 if (authenticationResponse.getErrorcode() == 0) {
                     createListRequest.setToken(authenticationResponse.getToken());
                     CreateListResponse createListResponse = elisaClient.createList(createListRequest);
+                    log.info("response from elisa: " + createListResponse.getErrorcode() + "(" + createListResponse.getErrorMessage() + ")");
                     if (createListResponse.getErrorcode() == 0) {
-                        log.info("successfully create elisa list");
+                        log.info("successfully created elisa entry");
                         sendNotificationMail(userID, "FachreferentIn");
                         return ResponseEntity.ok("List created");
                     } else if (createListResponse.getErrorcode() == 4) {
