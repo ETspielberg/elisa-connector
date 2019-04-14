@@ -18,6 +18,8 @@ import unidue.ub.elisaconnector.model.*;
 import unidue.ub.elisaconnector.service.MailContentBuilder;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -86,14 +88,23 @@ public class ElisaController {
             log.info("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
 
             // try to get the corresponding user account from the settings backend. If no user id can be obtained, send the email
-            String userID;
+            ElisaData elisaData;
             try {
-                userID = subjectClient.getElisaAccount(requestData.subjectarea);
+                List<ElisaData> allData = subjectClient.getElisaAccountForSubject(requestData.subjectarea);
+                if (allData.size() == 0) {
+                    sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
+                    log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
+                    return ResponseEntity.ok().body("could not retreive Elisa account id");
+                }
+                Collections.sort(allData);
+                elisaData = determineElisaData(allData);
             } catch (Exception e) {
                 sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
                 log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
+                log.warn("the following error occurred: " + e);
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
+            String userID = elisaData.getElisaUserId();
             if (userID == null || "".equals(userID)) {
                 log.info("found no user id for subject area " + requestData.subjectarea);
                 sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
@@ -148,11 +159,11 @@ public class ElisaController {
                     log.info("response from elisa: " + createListResponse.getErrorcode() + "(" + createListResponse.getErrorMessage() + ")");
                     if (createListResponse.getErrorcode() == 0) {
                         log.info("successfully created elisa entry");
-                        sendNotificationMail(userID, "FachreferentIn");
+                        sendNotificationMail(userID, elisaData.getElisaName());
                         return ResponseEntity.ok("List created");
                     } else if (createListResponse.getErrorcode() == 4) {
                         log.info("title already on list.");
-                        sendAlreadyContainedMail(userID, requestData, "FachreferentIn");
+                        sendAlreadyContainedMail(userID, requestData, elisaData.getElisaName());
                         return ResponseEntity.ok().body(createListResponse.getErrorMessage());
                     } else {
                         // if creation fails, send email to standard address
@@ -169,6 +180,7 @@ public class ElisaController {
 
             } catch (Exception e) {
                 log.error("could not connect to elisa API");
+                log.error("the following error occurred: " + e);
                 sendMail(defaultEavEamil, requestData, "ELi:SA API nicht erreichbar");
                 return ResponseEntity.ok().body("could not connect to elisa API");
             }
@@ -199,7 +211,7 @@ public class ElisaController {
      * @param essen                boolean, are items wanted for Essen?
      * @param duisburg             boolean, are items wanted for Duisburg?
      * @param requestPlace         if a request is desired, where should it be (Essen or Duisburg)?
-     * @return
+     * @return returns status code 200 if entry was created, else forwards the error message from elisa
      */
     // endpoint to process the data from the html form
     @PostMapping("/sendEav")
@@ -287,5 +299,11 @@ public class ElisaController {
         };
         emailSender.send(messagePreparator);
         log.info("sent email to " + to);
+    }
+
+    private ElisaData determineElisaData(List<ElisaData> availableProfiles) {
+        Collections.sort(availableProfiles);
+        // TODO: check for out-of-office status, select first one, second one, depending on result
+        return availableProfiles.get(0);
     }
 }
