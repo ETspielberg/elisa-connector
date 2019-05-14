@@ -32,4 +32,6 @@ public class ElisaConnectorApplication extends WebSecurityConfigurerAdapter {
                 .csrf().disable();
     }
 
+
+
 }

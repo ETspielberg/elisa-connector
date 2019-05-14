@@ -40,7 +40,7 @@ public class ElisaController {
 
     // the standard email address to send mails if elisa submission does not work
     @Value("${libintel.eavs.email.default}")
-    private String defaultEavEamil;
+    private String defaultEavEmail;
 
     // standard elisa user getting the notepads if no subject librarian can be chosen
     @Value("${libintel.elisa.userid.default}")
@@ -80,9 +80,19 @@ public class ElisaController {
     public ResponseEntity<?> receiveEav(@RequestBody RequestData requestData) {
         // ISBN regular expression test for ISBN
         Pattern patternISBN = Pattern.compile("^(97([89]))?\\d{9}(\\d|X)$");
+        String notationgroupname = "";
         if (requestData.isbn.contains("-"))
             requestData.isbn = requestData.isbn.replace("-", "");
-
+        if (requestData.subjectarea.equals("kA")) {
+            requestData.subjectarea = "keine Angabe";
+            log.warn("no subject given");
+            sendMail(defaultEavEmail, requestData, "Es wurde kein Fach angegeben");
+            return ResponseEntity.ok().body("Please provide a subject");
+        } else {
+            notationgroupname = requestData.subjectarea;
+            Notationgroup notationgroup = subjectClient.getNotationgroupById(requestData.subjectarea);
+            requestData.subjectarea = notationgroup.description;
+        }
         // if it is ISBN, try to upload it to elisa
         if (patternISBN.matcher(requestData.isbn).find()) {
             log.info("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
@@ -90,24 +100,25 @@ public class ElisaController {
             // try to get the corresponding user account from the settings backend. If no user id can be obtained, send the email
             ElisaData elisaData;
             try {
-                List<ElisaData> allData = subjectClient.getElisaAccountForSubject(requestData.subjectarea);
+                List<ElisaData> allData = subjectClient.getElisaAccountForSubject(notationgroupname);
+
                 if (allData.size() == 0) {
-                    sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
-                    log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
+                    sendMail(defaultEavEmail, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
+                    log.warn("could not retrieve the userID for subjectArea " + notationgroupname);
                     return ResponseEntity.ok().body("could not retreive Elisa account id");
                 }
                 Collections.sort(allData);
                 elisaData = determineElisaData(allData);
             } catch (Exception e) {
-                sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
-                log.warn("could not retrieve the userID for subjectArea " + requestData.subjectarea);
+                sendMail(defaultEavEmail, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
+                log.warn("could not retrieve the userID for subjectArea " + notationgroupname);
                 log.warn("the following error occurred: " + e);
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
             String userID = elisaData.getElisaUserId();
             if (userID == null || "".equals(userID)) {
-                log.info("found no user id for subject area " + requestData.subjectarea);
-                sendMail(defaultEavEamil, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
+                log.info("found no user id for subject area " + notationgroupname);
+                sendMail(defaultEavEmail, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
 
@@ -140,6 +151,19 @@ public class ElisaController {
                     note += "";
                 note += "D??:1,  , ";
             }
+            if (requestData.libraryaccountNumber != null) {
+                if (!requestData.libraryaccountNumber.isEmpty()) {
+                    note += "VM " + requestData.libraryaccountNumber;
+                    if (requestData.name != null) {
+                        if (!requestData.name.isEmpty())
+                            note += " (" + requestData.name + ")";
+                    }
+                    if (requestData.requestPlace != null) {
+                        if (!requestData.requestPlace.isEmpty())
+                            note += " in " + requestData.requestPlace;
+                    }
+                }
+            }
             if (requestData.requestPlace != null)
                 note += "VM " + requestData.libraryaccountNumber + " (" + requestData.name + ") in " + requestData.requestPlace;
             requestedTitle.setNotiz(note);
@@ -167,26 +191,26 @@ public class ElisaController {
                         return ResponseEntity.ok().body(createListResponse.getErrorMessage());
                     } else {
                         // if creation fails, send email to standard address
-                        sendMail(defaultEavEamil, requestData, "ELi:SA-Antwort: " + createListResponse.getErrorMessage());
+                        sendMail(defaultEavEmail, requestData, "ELi:SA-Antwort: " + createListResponse.getErrorMessage());
                         log.warn("could not create list. Reason: " + createListResponse.getErrorMessage());
                         return ResponseEntity.ok().body(createListResponse.getErrorMessage());
                     }
                     // if authentication fails, send email to standard address
                 } else {
                     log.error("elisa authentication failed. Reason: " + authenticationResponse.getErrorMessage());
-                    sendMail(defaultEavEamil, requestData, "Die ELi:SA -Authentifizierung ist fehlgeschlagen");
+                    sendMail(defaultEavEmail, requestData, "Die ELi:SA -Authentifizierung ist fehlgeschlagen");
                     return ResponseEntity.ok().body("no token received");
                 }
 
             } catch (Exception e) {
                 log.error("could not connect to elisa API");
                 log.error("the following error occurred: " + e);
-                sendMail(defaultEavEamil, requestData, "ELi:SA API nicht erreichbar");
+                sendMail(defaultEavEmail, requestData, "ELi:SA API nicht erreichbar");
                 return ResponseEntity.ok().body("could not connect to elisa API");
             }
         } else {
             log.warn("no isbn given");
-            sendMail(defaultEavEamil, requestData, "Es wurde keine ISBN angegeben");
+            sendMail(defaultEavEmail, requestData, "Es wurde keine ISBN angegeben");
             return ResponseEntity.ok().body("Please provide an ISBN");
         }
     }
