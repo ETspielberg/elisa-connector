@@ -42,6 +42,10 @@ public class ElisaController {
     @Value("${libintel.eavs.email.default}")
     private String defaultEavEmail;
 
+    // the email address to appear as "from"
+    @Value("${libintel.eavs.email.from}")
+    private String eEavEmailFrom;
+
     // standard elisa user getting the notepads if no subject librarian can be chosen
     @Value("${libintel.elisa.userid.default}")
     private String defaultElisaUserid;
@@ -80,7 +84,7 @@ public class ElisaController {
     public ResponseEntity<?> receiveEav(@RequestBody RequestData requestData) {
         // ISBN regular expression test for ISBN
         Pattern patternISBN = Pattern.compile("^(97([89]))?\\d{9}(\\d|X)$");
-        String notationgroupname = "";
+        String notationgroupname;
         if (requestData.isbn.contains("-"))
             requestData.isbn = requestData.isbn.replace("-", "");
         if (requestData.subjectarea.equals("kA")) {
@@ -90,8 +94,14 @@ public class ElisaController {
             return ResponseEntity.ok().body("Please provide a subject");
         } else {
             notationgroupname = requestData.subjectarea;
-            Notationgroup notationgroup = subjectClient.getNotationgroupById(requestData.subjectarea);
-            requestData.subjectarea = notationgroup.description;
+            Notationgroup notationgroup;
+            try {
+                notationgroup = subjectClient.getNotationgroupById(notationgroupname);
+                requestData.subjectarea = notationgroup.description;
+            } catch (Exception e) {
+                log.warn("could not obtain subject description", e);
+            }
+
         }
         // if it is ISBN, try to upload it to elisa
         if (patternISBN.matcher(requestData.isbn).find()) {
@@ -289,7 +299,7 @@ public class ElisaController {
     private void sendMail(String to, RequestData requestData, String reason) {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
-            messageHelper.setFrom("eike.spielberg@uni-due.de");
+            messageHelper.setFrom(eEavEmailFrom);
             messageHelper.setTo(to);
             String text = mailContentBuilder.build(requestData, reason);
             messageHelper.setText(text, true);
@@ -302,7 +312,7 @@ public class ElisaController {
     private void sendNotificationMail(String to, String name) {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
-            messageHelper.setFrom("eike.spielberg@uni-due.de");
+            messageHelper.setFrom(eEavEmailFrom);
             messageHelper.setTo(to);
             String text = mailContentBuilder.buildNotification(name);
             messageHelper.setText(text, true);
@@ -315,7 +325,7 @@ public class ElisaController {
     private void sendAlreadyContainedMail(String to, RequestData requestData, String name) {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
-            messageHelper.setFrom("eike.spielberg@uni-due.de");
+            messageHelper.setFrom(eEavEmailFrom);
             messageHelper.setTo(to);
             String text = mailContentBuilder.buildAlreadyContained(requestData, name);
             messageHelper.setText(text, true);

@@ -1,7 +1,7 @@
 package unidue.ub.elisaconnector.model;
 
 /**
- * Plain old java object holding a subject and the corresponding description and range of notation.
+ * Plain old java object holding a subject and the corresponding description
  * 
  * @author Eike Spielberg
  * @version 1
