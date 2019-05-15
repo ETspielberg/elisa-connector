@@ -70,6 +70,7 @@ public class ElisaController {
     public ElisaController(ElisaClient elisaClient, SubjectClient subjectClient, JavaMailSender emailSender, MailContentBuilder mailContentBuilder) {
         this.elisaClient = elisaClient;
         this.subjectClient = subjectClient;
+        // error on unknown bean for emailSender can be ignored, emailSender bean is created from configuration properties
         this.emailSender = emailSender;
         this.mailContentBuilder = mailContentBuilder;
     }
@@ -174,8 +175,6 @@ public class ElisaController {
                     }
                 }
             }
-            if (requestData.requestPlace != null)
-                note += "VM " + requestData.libraryaccountNumber + " (" + requestData.name + ") in " + requestData.requestPlace;
             requestedTitle.setNotiz(note);
 
             // prepare the creation request
