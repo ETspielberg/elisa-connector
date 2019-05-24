@@ -86,8 +86,9 @@ public class ElisaController {
         // ISBN regular expression test for ISBN
         Pattern patternISBN = Pattern.compile("^(97([89]))?\\d{9}(\\d|X)$");
         String notationgroupname;
-        if (requestData.isbn.contains("-"))
-            requestData.isbn = requestData.isbn.replace("-", "");
+        if (requestData.isbn != null)
+            if (requestData.isbn.contains("-"))
+                requestData.isbn = requestData.isbn.replace("-", "");
         if (requestData.subjectarea.equals("kA")) {
             requestData.subjectarea = "keine Angabe";
             log.warn("no subject given");
