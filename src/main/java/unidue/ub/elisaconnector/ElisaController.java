@@ -89,6 +89,8 @@ public class ElisaController {
         if (requestData.isbn != null)
             if (requestData.isbn.contains("-"))
                 requestData.isbn = requestData.isbn.replace("-", "");
+        if (requestData.subjectarea == null)
+            requestData.subjectarea = "kA";
         if (requestData.subjectarea.equals("kA")) {
             requestData.subjectarea = "keine Angabe";
             log.warn("no subject given");
@@ -276,7 +278,7 @@ public class ElisaController {
     /**
      * direkt wrapper for the ELi:SA API. handles authentication etc. credentials remain stored in the secured config server.
      *
-     * @param protokollToElisaRequest      A container object holding the list of titles to be send to ELi:SA, the notepad name and the elisa user ID
+     * @param protokollToElisaRequest A container object holding the list of titles to be send to ELi:SA, the notepad name and the elisa user ID
      * @return status message
      */
     @PostMapping("/sendToElisa")
@@ -287,7 +289,7 @@ public class ElisaController {
         if (authenticationResponse.getErrorcode() != 0)
             return ResponseEntity.badRequest().body(authenticationResponse.getErrorMessage());
         CreateListRequest createListRequest = new CreateListRequest(protokollToElisaRequest.getUserID(), protokollToElisaRequest.getNotepadName());
-        log.info("creating elisa request for user " + protokollToElisaRequest.getUserID() + " and notepad " +  protokollToElisaRequest.getNotepadName());
+        log.info("creating elisa request for user " + protokollToElisaRequest.getUserID() + " and notepad " + protokollToElisaRequest.getNotepadName());
         createListRequest.setToken(authenticationResponse.getToken());
         createListRequest.setTitleList(Arrays.asList(protokollToElisaRequest.getTitles()));
         CreateListResponse createListResponse = elisaClient.createList(createListRequest);
