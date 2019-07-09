@@ -15,6 +15,8 @@ public class TitleData {
     }
 
     public TitleData(String isbn) {
+        this.notizIntern = "";
+        this.notiz = "";
         this.isbn = isbn;
     }
 

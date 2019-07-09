@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import unidue.ub.elisaconnector.client.ElisaClient;
 import unidue.ub.elisaconnector.client.SubjectClient;
 import unidue.ub.elisaconnector.model.*;
+import unidue.ub.elisaconnector.service.ElisaTitleDataBuilder;
 import unidue.ub.elisaconnector.service.MailContentBuilder;
 
 import java.util.Arrays;
@@ -86,17 +87,20 @@ public class ElisaController {
         // ISBN regular expression test for ISBN
         Pattern patternISBN = Pattern.compile("^(97([89]))?\\d{9}(\\d|X)$");
         String notationgroupname;
-        if (requestData.isbn != null)
-            if (requestData.isbn.contains("-"))
-                requestData.isbn = requestData.isbn.replace("-", "");
-        if (requestData.subjectarea == null)
-            requestData.subjectarea = "kA";
-        if (requestData.subjectarea.equals("kA")) {
+
+        // remove hyphens if present
+        if (requestData.isbn != null && requestData.isbn.contains("-"))
+            requestData.isbn = requestData.isbn.replace("-", "");
+
+        // if the subject field is null or no subject is selected, send the mail to the default address.
+        if (requestData.subjectarea == null || requestData.subjectarea.equals("kA")) {
             requestData.subjectarea = "keine Angabe";
             log.warn("no subject given");
             sendMail(defaultEavEmail, requestData, "Es wurde kein Fach angegeben");
             return ResponseEntity.ok().body("Please provide a subject");
         } else {
+            // if a subject code is given, store the code in an intermediate variable, retrieve the notation group from
+            //  the repository, and replace the subject code by the speaking name.
             notationgroupname = requestData.subjectarea;
             Notationgroup notationgroup;
             try {
@@ -105,19 +109,22 @@ public class ElisaController {
             } catch (Exception e) {
                 log.warn("could not obtain subject description", e);
             }
-
         }
-        // if it is ISBN, try to upload it to elisa
+        // if the given isbn is valid for elisa, proceed trying to build elisa request.
         if (patternISBN.matcher(requestData.isbn).find()) {
             log.info("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
 
-            // try to get the corresponding user account from the settings backend. If no user id can be obtained, send the email
+            // try to get the corresponding user accounts from the settings backend.
+            // If no user id can be obtained, send the email to the default address.
             ElisaData elisaData;
             try {
+
+                // retrieve all elisa accounts for this subject
                 List<ElisaData> allData = subjectClient.getElisaAccountForSubject(notationgroupname);
 
+                // if the list is empty, send the email to the default address
                 if (allData.size() == 0) {
-                    sendMail(defaultEavEmail, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
+                    sendMail(defaultEavEmail, requestData, "Zu diesem Fach konnte kein ELi:SA Account gefunden werden.");
                     log.warn("could not retrieve the userID for subjectArea " + notationgroupname);
                     return ResponseEntity.ok().body("could not retreive Elisa account id");
                 }
@@ -141,44 +148,8 @@ public class ElisaController {
             // prepare isbns for sending to elisa
             CreateListRequest createListRequest = new CreateListRequest(userID, "Anschaffungsvorschlag");
 
-            TitleData requestedTitle = new TitleData(requestData.isbn);
-
-            // prepare the intern note with the data about the user and his comments. Add the email for notification.
-            String noteIntern = "Vorschlag von " + requestData.name + " (" + requestData.emailAddress + ")";
-            if (requestData.response) {
-                noteIntern += "\n Bitte den Nutzer über Kaufentscheidung benachrichtigen.";
-            }
-            if (!"".equals(requestData.comment))
-                noteIntern += "\n Kommentar: " + requestData.comment;
-            if (!"".equals(requestData.source))
-                noteIntern += "\n Literaturangebe von: " + requestData.source;
-
-            requestedTitle.setNotizIntern(noteIntern);
-
-            // prepare the library note
-            String note = "";
-            if (requestData.essen) {
-                note += "E??:1, ";
-            }
-            if (requestData.duisburg) {
-                if (requestData.essen)
-                    note += "";
-                note += "D??:1,  , ";
-            }
-            if (requestData.libraryaccountNumber != null) {
-                if (!requestData.libraryaccountNumber.isEmpty()) {
-                    note += "VM " + requestData.libraryaccountNumber;
-                    if (requestData.name != null) {
-                        if (!requestData.name.isEmpty())
-                            note += " (" + requestData.name + ")";
-                    }
-                    if (requestData.requestPlace != null) {
-                        if (!requestData.requestPlace.isEmpty())
-                            note += " in " + requestData.requestPlace;
-                    }
-                }
-            }
-            requestedTitle.setNotiz(note);
+            // build the title data (isbn, note, and note intern) from the request data)
+            TitleData requestedTitle = ElisaTitleDataBuilder.fromRequestData(requestData);
 
             // prepare the creation request
             createListRequest.addTitle(new Title(requestedTitle));
@@ -195,7 +166,7 @@ public class ElisaController {
                     log.info("response from elisa: " + createListResponse.getErrorcode() + "(" + createListResponse.getErrorMessage() + ")");
                     if (createListResponse.getErrorcode() == 0) {
                         log.info("successfully created elisa entry");
-                        sendNotificationMail(userID, elisaData.getElisaName());
+                        sendNotificationMail(userID, elisaData.getElisaName(), requestData);
                         return ResponseEntity.ok("List created");
                     } else if (createListResponse.getErrorcode() == 4) {
                         log.info("title already on list.");
@@ -217,7 +188,7 @@ public class ElisaController {
             } catch (Exception e) {
                 log.error("could not connect to elisa API");
                 log.error("the following error occurred: " + e);
-                sendMail(defaultEavEmail, requestData, "ELi:SA API nicht erreichbar");
+                sendMail(defaultEavEmail, requestData, "Fehler beim Senden an die ELi:SA API");
                 return ResponseEntity.ok().body("could not connect to elisa API");
             }
         } else {
@@ -311,12 +282,12 @@ public class ElisaController {
         log.info("sent email to " + to);
     }
 
-    private void sendNotificationMail(String to, String name) {
+    private void sendNotificationMail(String to, String name, RequestData requestData) {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
             messageHelper.setFrom(eEavEmailFrom);
             messageHelper.setTo(to);
-            String text = mailContentBuilder.buildNotification(name);
+            String text = mailContentBuilder.buildNotification(name, requestData);
             messageHelper.setText(text, true);
             messageHelper.setSubject("neuer Anschaffungsvorschlag in Elisa");
         };

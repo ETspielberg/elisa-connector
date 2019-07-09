@@ -83,9 +83,20 @@ public class MailContentBuilder {
      * @param name name of the subject librarian
      * @return the mail body in html.
      */
-    public String buildNotification(String name) {
+    public String buildNotification(String name, RequestData requestData) {
         Context context = new Context();
-        context.setVariable("name", name);
+        context.setVariable("to", name);
+        context.setVariable("title", requestData.title);
+        context.setVariable("contributor", requestData.contributor);
+        context.setVariable("name", requestData.name);
+        context.setVariable("emailAddress", requestData.emailAddress);
+        context.setVariable("comment", requestData.comment);
+        context.setVariable("source", requestData.source);
+        context.setVariable("subject", requestData.subjectarea);
+        if (requestData.response)
+            context.setVariable("response", "Ja");
+        else
+            context.setVariable("response", "Nein");
         return templateEngine.process("notificationMailTemplate", context);
     }
 }
