@@ -95,8 +95,12 @@ public class ElisaController {
         // if the subject field is null or no subject is selected, send the mail to the default address.
         if (requestData.subjectarea == null || requestData.subjectarea.equals("kA")) {
             requestData.subjectarea = "keine Angabe";
-            log.warn("no subject given");
+            log.debug("no subject given");
             sendMail(defaultEavEmail, requestData, "Es wurde kein Fach angegeben");
+            if (requestData.isbn.isEmpty())
+                log.info("subject: 'no subject given', isbn: 'no isbn given', action: 'default email sent', elisa: 'not possible'");
+            else
+                log.info("subject: 'no subject given', isbn: " + requestData.isbn + ", action: 'default email sent', elisa: 'not possible'");
             return ResponseEntity.ok().body("Please provide a subject");
         } else {
             // if a subject code is given, store the code in an intermediate variable, retrieve the notation group from
@@ -107,12 +111,12 @@ public class ElisaController {
                 notationgroup = subjectClient.getNotationgroupById(notationgroupname);
                 requestData.subjectarea = notationgroup.description;
             } catch (Exception e) {
-                log.warn("could not obtain subject description", e);
+                log.debug("could not obtain subject description", e);
             }
         }
         // if the given isbn is valid for elisa, proceed trying to build elisa request.
         if (patternISBN.matcher(requestData.isbn).find()) {
-            log.info("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
+            log.debug("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
 
             // try to get the corresponding user accounts from the settings backend.
             // If no user id can be obtained, send the email to the default address.
@@ -125,25 +129,28 @@ public class ElisaController {
                 // if the list is empty, send the email to the default address
                 if (allData.size() == 0) {
                     sendMail(defaultEavEmail, requestData, "Zu diesem Fach konnte kein ELi:SA Account gefunden werden.");
-                    log.warn("could not retrieve the userID for subjectArea " + notationgroupname);
+                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'no account available'");
+                    log.debug("could not retrieve the userID for subjectArea " + notationgroupname);
                     return ResponseEntity.ok().body("could not retreive Elisa account id");
                 }
                 Collections.sort(allData);
                 elisaData = determineElisaData(allData);
             } catch (Exception e) {
                 sendMail(defaultEavEmail, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
-                log.warn("could not retrieve the userID for subjectArea " + notationgroupname);
-                log.warn("the following error occurred: " + e);
+                log.debug("could not retrieve the userID for subjectArea " + notationgroupname);
+                log.debug("the following error occurred: " + e);
+                log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'no account available'");
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
             String userID = elisaData.getElisaUserId();
             if (userID == null || "".equals(userID)) {
-                log.info("found no user id for subject area " + notationgroupname);
+                log.debug("found no user id for subject area " + notationgroupname);
                 sendMail(defaultEavEmail, requestData, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
+                log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'elisa accounts incomplete'");
                 return ResponseEntity.ok().body("could not retreive Elisa account id");
             }
 
-            log.info("setting elisa id to " + userID);
+            log.debug("setting elisa id to " + userID);
 
             // prepare isbns for sending to elisa
             CreateListRequest createListRequest = new CreateListRequest(userID, "Anschaffungsvorschlag");
@@ -163,37 +170,43 @@ public class ElisaController {
                 if (authenticationResponse.getErrorcode() == 0) {
                     createListRequest.setToken(authenticationResponse.getToken());
                     CreateListResponse createListResponse = elisaClient.createList(createListRequest);
-                    log.info("response from elisa: " + createListResponse.getErrorcode() + "(" + createListResponse.getErrorMessage() + ")");
+                    log.debug("response from elisa: " + createListResponse.getErrorcode() + "(" + createListResponse.getErrorMessage() + ")");
                     if (createListResponse.getErrorcode() == 0) {
-                        log.info("successfully created elisa entry");
+                        log.debug("successfully created elisa entry");
                         sendNotificationMail(userID, elisaData.getElisaName(), requestData);
+                        log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'notification email sent', elisa: 'list item created'");
                         return ResponseEntity.ok("List created");
                     } else if (createListResponse.getErrorcode() == 4) {
-                        log.info("title already on list.");
+                        log.debug("title already on list.");
                         sendAlreadyContainedMail(userID, requestData, elisaData.getElisaName());
+                        log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'already contained email sent', elisa: 'already on list'");
                         return ResponseEntity.ok().body(createListResponse.getErrorMessage());
                     } else {
                         // if creation fails, send email to standard address
                         sendMail(defaultEavEmail, requestData, "ELi:SA-Antwort: " + createListResponse.getErrorMessage());
-                        log.warn("could not create list. Reason: " + createListResponse.getErrorMessage());
+                        log.debug("could not create list. Reason: " + createListResponse.getErrorMessage());
+                        log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'error message'");
                         return ResponseEntity.ok().body(createListResponse.getErrorMessage());
                     }
                     // if authentication fails, send email to standard address
                 } else {
                     log.error("elisa authentication failed. Reason: " + authenticationResponse.getErrorMessage());
                     sendMail(defaultEavEmail, requestData, "Die ELi:SA -Authentifizierung ist fehlgeschlagen");
+                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'authentication failed'");
                     return ResponseEntity.ok().body("no token received");
                 }
 
             } catch (Exception e) {
                 log.error("could not connect to elisa API");
-                log.error("the following error occurred: " + e);
+                log.debug("the following error occurred: " + e);
+                log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'no connection'");
                 sendMail(defaultEavEmail, requestData, "Fehler beim Senden an die ELi:SA API");
                 return ResponseEntity.ok().body("could not connect to elisa API");
             }
         } else {
-            log.warn("no isbn given");
+            log.debug("no isbn given");
             sendMail(defaultEavEmail, requestData, "Es wurde keine ISBN angegeben");
+            log.info("subject: '" + requestData.subjectarea + "', isbn: 'no isbn given', action: 'default email sent', elisa: 'no account available'");
             return ResponseEntity.ok().body("Please provide an ISBN");
         }
     }
@@ -260,7 +273,7 @@ public class ElisaController {
         if (authenticationResponse.getErrorcode() != 0)
             return ResponseEntity.badRequest().body(authenticationResponse.getErrorMessage());
         CreateListRequest createListRequest = new CreateListRequest(protokollToElisaRequest.getUserID(), protokollToElisaRequest.getNotepadName());
-        log.info("creating elisa request for user " + protokollToElisaRequest.getUserID() + " and notepad " + protokollToElisaRequest.getNotepadName());
+        log.debug("creating elisa request for user " + protokollToElisaRequest.getUserID() + " and notepad " + protokollToElisaRequest.getNotepadName());
         createListRequest.setToken(authenticationResponse.getToken());
         createListRequest.setTitleList(Arrays.asList(protokollToElisaRequest.getTitles()));
         CreateListResponse createListResponse = elisaClient.createList(createListRequest);
@@ -279,7 +292,7 @@ public class ElisaController {
             messageHelper.setSubject("Anschaffungsvorschlag");
         };
         emailSender.send(messagePreparator);
-        log.info("sent email to " + to);
+        log.debug("sent email to " + to);
     }
 
     private void sendNotificationMail(String to, String name, RequestData requestData) {
@@ -292,7 +305,7 @@ public class ElisaController {
             messageHelper.setSubject("neuer Anschaffungsvorschlag in Elisa");
         };
         emailSender.send(messagePreparator);
-        log.info("sent email to " + to);
+        log.debug("sent email to " + to);
     }
 
     private void sendAlreadyContainedMail(String to, RequestData requestData, String name) {
@@ -305,7 +318,7 @@ public class ElisaController {
             messageHelper.setSubject("Anschaffungsvorschlag");
         };
         emailSender.send(messagePreparator);
-        log.info("sent email to " + to);
+        log.debug("sent email to " + to);
     }
 
     private ElisaData determineElisaData(List<ElisaData> availableProfiles) {
