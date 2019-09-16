@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: elisa
+  cloud:
+    config:
+      uri: http://localhost:11811
+      name: elisa, ooo, mail, service-provider
+      username: ${libintel_config_username:dalek}
+      password: ${libintel_config_password:3l1m1nat3}
+      label: ${libintel_profile:dev}
