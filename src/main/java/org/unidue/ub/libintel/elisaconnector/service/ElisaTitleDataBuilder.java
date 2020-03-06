@@ -1,27 +1,44 @@
 package org.unidue.ub.libintel.elisaconnector.service;
 
 import org.unidue.ub.libintel.elisaconnector.model.RequestData;
+import org.unidue.ub.libintel.elisaconnector.model.RequestDataLecturer;
+import org.unidue.ub.libintel.elisaconnector.model.RequestDataUser;
 import org.unidue.ub.libintel.elisaconnector.model.TitleData;
 
 public class ElisaTitleDataBuilder {
 
-    /**
-     * takes a RequestData object and generates a TitleData object from it, which can be submitted to elisa.
-     * @param requestData the request data as obtained from the web form
-     * @return the data to be submitted to elisa
-     */
-    public static TitleData fromRequestData(RequestData requestData) {
+    public static TitleData fromRequestData(RequestData requestData){
+        String className = requestData.getClass().getSimpleName();
         TitleData titleData = new TitleData(requestData.isbn);
+        switch(className) {
+            case "RequestDataUser": {
+                addRequestDataUser(titleData, (RequestDataUser) requestData);
+                break;
+            }
+            case "RequestDataLecturer": {
+                addRequestDataLecturer(titleData, (RequestDataLecturer) requestData);
+                break;
+            }
+        }
+        return titleData;
 
+    }
+
+
+    /**
+     * takes a RequestDataUser object and adds the specific fields to the providedTitleData object.
+     * @param requestData the request data as obtained from the web form
+     */
+    private static void addRequestDataUser(TitleData titleData, RequestDataUser requestData) {
         // prepare the library note
-        String note = "";
+        String note = titleData.getNotiz();
         if (requestData.essen) {
-            note += "E??:1, ";
+            note = "E??:1, " + note;
         }
         if (requestData.duisburg) {
             if (requestData.essen)
-                note += "";
-            note += "D??:1,  , ";
+                note += "" + note;
+            note += "D??:1,  , " + note;
         }
         if (requestData.libraryaccountNumber != null) {
             if (!requestData.libraryaccountNumber.isEmpty()) {
@@ -33,6 +50,26 @@ public class ElisaTitleDataBuilder {
             }
         }
         titleData.setNotiz(note);
-        return titleData;
+    }
+
+
+    /**
+     * takes a RequestDataLecturer object and adds the specific fields to the providedTitleData object.
+     * @param requestData the request data as obtained from the web form
+     */
+    private static void addRequestDataLecturer(TitleData titleData, RequestDataLecturer requestData) {
+        String intern = "VM für ";
+        if (requestData.personalAccount) {
+            intern += " perönlichen Ausweis ";
+
+        }
+        if (requestData.happAccount) {
+            intern += " Handapparat";
+        }
+        if (requestData.semAppAccount) {
+            intern += " Semesterapparat";
+        }
+        intern += " Ausweis erwünscht.";
+        titleData.setNotizIntern(intern);
     }
 }

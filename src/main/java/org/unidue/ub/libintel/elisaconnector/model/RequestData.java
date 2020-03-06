@@ -10,17 +10,14 @@ public class RequestData {
     public  String year;
     public  String price;
     public  String subjectarea;
-    public  String source;
     public  String comment;
     public  String name;
     public  String libraryaccountNumber;
     public  String emailAddress;
-    public  boolean response;
-    public  boolean essen;
-    public  boolean duisburg;
-    public  String requestPlace;
 
-    public RequestData(String isbn, String title, String contributor, String edition, String publisher, String year, String price, String subjectarea, String source, String comment, String name, String libraryaccountNumber, String emailAddress, boolean response, boolean essen, boolean duisburg, String requestPlace) {
+    public RequestData() {}
+
+    public RequestData(String isbn, String title, String contributor, String edition, String publisher, String year, String price, String subjectarea, String comment, String name, String libraryaccountNumber, String emailAddress) {
         this.isbn = isbn;
         this.title = title;
         this.contributor = contributor;
@@ -29,14 +26,10 @@ public class RequestData {
         this.year = year;
         this.price = price;
         this.subjectarea = subjectarea;
-        this.source = source;
         this.comment = comment;
         this.name = name;
         this.libraryaccountNumber = libraryaccountNumber;
         this.emailAddress = emailAddress;
-        this.response = response;
-        this.essen = essen;
-        this.duisburg = duisburg;
-        this.requestPlace = requestPlace;
     }
 }
+

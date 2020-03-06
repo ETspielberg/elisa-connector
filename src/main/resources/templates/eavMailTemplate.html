@@ -20,7 +20,17 @@
     </style>
 </head>
 <body>
-<h1 class="title">Anschaffungsvorschlag</h1>
+<th:block th:switch="${mailType}">
+    <h1 class="title" th:case="user">
+        Anschaffungsvorschlag eines Studierenden/Externen
+    </h1>
+    <h1 class="title" th:case="lecturer">
+        Anschaffungsvorschlag eines Lehrenden
+    </h1>
+    <h1 class="title" th:case="*">
+        Anschaffungsvorschlag
+    </h1>
+</th:block>
 <p class="text">Es gibt einen neuen Anschaffungsvorschlag</p>
 <table>
     <tr>
@@ -55,7 +65,7 @@
         <th class="caption">Fachrichtung</th>
         <th><span th:text="${subjectarea}"></span></th>
     </tr>
-    <tr>
+    <tr th:if="${mailType} eq 'user'">
         <th class="caption">Woher stammt Ihre Literaturangabe?</th>
         <th><span th:text="${source}"></span></th>
     </tr>
@@ -75,21 +85,29 @@
         <th class="caption">E-Mail-Adresse</th>
         <th><span th:text="${emailAddress}"></span></th>
     </tr>
-    <tr>
+    <tr th:if="${mailType} eq 'user'">
         <th class="caption">Benachrichtigung über die Kaufentscheidung</th>
         <th><span th:text="${response}"></span></th>
     </tr>
-    <tr>
-        <th class="caption">Anschaffung für den Campus Duisburg</th>
-        <th><span th:text="${duisburg}"></span></th>
+    <tr th:if="${mailType} eq 'lecturer'">
+        <th class="caption">Keine Vormerkung, direkt in den Bestand</th>
+        <th><span th:text="${directToStock}"></span></th>
     </tr>
-    <tr>
-        <th class="caption">Anschaffung für den Campus Essen</th>
-        <th><span th:text="${essen}"></span></th>
+    <tr th:if="${mailType} eq 'lecturer'">
+        <th class="caption">Vormerkung für den persönlischen Bibliotheksausweis</th>
+        <th><span th:text="${personalAccount}"></span></th>
     </tr>
-    <tr>
-        <th class="caption">Vormerkung mit Bereitstellungsort</th>
-        <th><span th:text="${requestPlace}"></span></th>
+    <tr th:if="${mailType} eq 'lecturer'">
+        <th class="caption">Vormerkung für Handapparat</th>
+        <th><span th:text="${happAccount}"></span></th>
+    </tr>
+    <tr th:if="${mailType} eq 'lecturer'">
+        <th class="caption">Vormerkung für Semesterapparat</th>
+        <th><span th:text="${semAppAccount}"></span></th>
+    </tr>
+    <tr th:if="${mailType} eq 'lecturer'">
+        <th class="caption">Ausweis- oder Semesterapparatsnummer</th>
+        <th><span th:text="${semAppNumber}"></span></th>
     </tr>
 </table>
 
