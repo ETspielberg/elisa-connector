@@ -19,7 +19,7 @@ public class RequestValidatorService {
      * @return 'no.subjectarea', 'no.isbn', 'valid.isbn', 'invalid.isbn'
      */
     public String validate(RequestData requestData) {
-        if (requestData.subjectarea == null || requestData.subjectarea.equals("kA"))
+        if (requestData.subjectarea == null || requestData.subjectarea.equals("kA") || requestData.subjectarea.trim().equals(""))
             return "no.subjectarea";
         if (requestData.isbn == null || requestData.isbn.isEmpty())
             return "no.isbn";

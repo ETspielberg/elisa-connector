@@ -43,7 +43,7 @@ public class ElisaController {
      *
      * @param mailSenderService       responsible for composing and sending the emails
      * @param subjectClient           the subject Feign client
-     * @param requestValidatorService validates the request
+     * @param requestValidatorService validates the request and checks for correct ISBNs
      * @param elisaAccountService     retrieves the appropriate account
      * @param elisaService            connects to elisa and submits the item list
      */
@@ -60,18 +60,30 @@ public class ElisaController {
         this.elisaAccountService = elisaAccountService;
     }
 
+    /**
+     * endppoint to receive the general data from the web form as json object.
+     *
+     * @param requestDataLecturer the submission from the form (JSON-encoded) with the fields applicable to lecturers
+     * @return a status message
+     */
     @PostMapping("/receiveEavLecturer")
     public ResponseEntity<?> receiveEavLecturer(@RequestBody RequestDataLecturer requestDataLecturer) {
         return receiveEav(requestDataLecturer);
     }
 
+    /**
+     * endppoint to receive the general data from the web form as json object.
+     *
+     * @param requestDataUser the submission from the form (JSON-encoded) with the fields applicable to users
+     * @return a status message
+     */
     @PostMapping("/receiveEavUser")
     public ResponseEntity<?> receiveEavUser(@RequestBody RequestDataUser requestDataUser) {
         return receiveEav(requestDataUser);
     }
 
     /**
-     * endppoint to receive the data from the web form as json object.
+     * endppoint to receive the general data from the web form as json object.
      *
      * @param requestData the submission from the form (JSON-encoded)
      * @return a status message
@@ -80,9 +92,10 @@ public class ElisaController {
     public ResponseEntity<?> receiveEav(@RequestBody RequestData requestData) {
         // validate the request
         String requestValidation = requestValidatorService.validate(requestData);
+        log.info(requestValidation);
 
         // if no subject is given, send the default email
-        if (requestValidation.equals("no.subject")) {
+        if (requestValidation.equals("no.subjectarea")) {
             requestData.subjectarea = "keine Angabe";
             mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde kein Fach angegeben");
             if (requestData.isbn.isEmpty())
@@ -157,7 +170,7 @@ public class ElisaController {
                     }
                     else {
                         log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'eav mail sent', elisa: 'title not in elisa'");
-                        mailSenderService.sendEavMail(requestData, elisaData.getElisaUserId(), "Der Titel ist nicht in ELi:SA enthalten.");
+                        mailSenderService.sendEavMail(requestData, defaultEavEmail, "Der Titel ist nicht in ELi:SA enthalten.");
                         return ResponseEntity.badRequest().build();
                     }
 
@@ -173,7 +186,7 @@ public class ElisaController {
                     return ResponseEntity.ok().body("no token received");
                 } catch (InvalidIsbnException iie) {
                     log.error("isbn with errors. Reason: " + iie.getMessage());
-                    mailSenderService.sendEavMail(requestData, elisaData.getElisaUserId(), "Die ISBN konnte nciht in ELi:SA gefunden werden.");
+                    mailSenderService.sendEavMail(requestData, defaultEavEmail, "Die ISBN konnte nciht in ELi:SA gefunden werden.");
                     log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'isbn with errors'");
                     return ResponseEntity.ok().body("isbn with errors");
                 }
