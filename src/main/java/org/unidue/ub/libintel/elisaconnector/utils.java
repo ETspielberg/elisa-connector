@@ -31,6 +31,7 @@ public class utils {
         context.setVariable("happAccount", requestDataLecturer.happAccount);
         context.setVariable("semAppAccount", requestDataLecturer.semAppAccount);
         context.setVariable("semAppNumber", requestDataLecturer.semAppNumber);
+        context.setVariable("number", requestDataLecturer.number);
     }
 
     public static void setUserSpecificVariables(Context context, RequestDataUser requestDataUser) {

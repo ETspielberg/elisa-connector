@@ -94,6 +94,10 @@
         <th><span th:text="${directToStock}"></span></th>
     </tr>
     <tr th:if="${mailType} eq 'lecturer'">
+        <th class="caption">Exemplare </th>
+        <th><span th:text="${number}"></span></th>
+    </tr>
+    <tr th:if="${mailType} eq 'lecturer'">
         <th class="caption">Vormerkung für den persönlischen Bibliotheksausweis</th>
         <th><span th:text="${personalAccount}"></span></th>
     </tr>

@@ -6,10 +6,11 @@ public class RequestDataLecturer extends RequestData {
     public boolean personalAccount;
     public boolean happAccount;
     public boolean semAppAccount;
+    public int number;
     public String semAppNumber;
     public String source;
 
-    public RequestDataLecturer(String isbn, String title, String contributor, String edition, String publisher, String year, String price, String subjectarea, String source, String comment, String name, String libraryaccountNumber, String emailAddress, boolean personalAccount, boolean happAccount, boolean semAppAccount, boolean directToStock, String semAppNumber) {
+    public RequestDataLecturer(String isbn, String title, String contributor, String edition, String publisher, String year, String price, String subjectarea, String source, String comment, String name, String libraryaccountNumber, String emailAddress, boolean personalAccount, boolean happAccount, boolean semAppAccount, boolean directToStock, String semAppNumber, int number) {
         super(isbn, title, contributor, edition, publisher, year, price, subjectarea, comment, name, libraryaccountNumber, emailAddress);
         this.directToStock = directToStock;
         this.personalAccount = personalAccount;
@@ -17,5 +18,6 @@ public class RequestDataLecturer extends RequestData {
         this.semAppAccount = semAppAccount;
         this.source = source;
         this.semAppNumber = semAppNumber;
+        this.number = number;
     }
 }

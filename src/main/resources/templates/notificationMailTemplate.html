@@ -36,7 +36,10 @@
     <div th:case="lecturer">
         <p>Literaturquelle: <span th:text="${source}"></span></p>
         <p th:if="${directToStock}">
-            Der Titel soll direkt in den Bestand
+            Der Titel soll direkt in den Bestand.
+        </p>
+        <p th:if="${number} > 1">
+            Bitte <span th:text="${number}"></span> Exemplare bestellen.
         </p>
         <p th:if="${personalAccount}">
             <span th:text="${name}"></span> möchte eine Vormerkung für seinen persönlichen Ausweis.

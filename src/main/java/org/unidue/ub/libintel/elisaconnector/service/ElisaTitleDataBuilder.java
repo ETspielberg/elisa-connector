@@ -69,7 +69,10 @@ public class ElisaTitleDataBuilder {
         if (requestData.semAppAccount) {
             intern += " Semesterapparat";
         }
-        intern += " Ausweis erwünscht.";
+        intern += " erwünscht.";
+        if (requestData.number > 1){
+            intern += " Bitte " + requestData.number + " Exemplare bestellen.";
+        }
         titleData.setNotizIntern(intern);
     }
 }
