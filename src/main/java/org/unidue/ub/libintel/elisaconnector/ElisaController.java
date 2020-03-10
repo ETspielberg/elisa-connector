@@ -16,6 +16,8 @@ import org.unidue.ub.libintel.elisaconnector.exceptions.MissingElisaAccountExcep
 import org.unidue.ub.libintel.elisaconnector.model.*;
 import org.unidue.ub.libintel.elisaconnector.service.*;
 
+import static org.unidue.ub.libintel.elisaconnector.service.LogServie.logElisa;
+
 /**
  * provides endpoints to wrap the ELi:SA API.
  */
@@ -94,14 +96,19 @@ public class ElisaController {
         String requestValidation = requestValidatorService.validate(requestData);
         log.debug(requestValidation);
 
+        String requestType = requestData.getClass().getSimpleName();
+        if (requestType.contains("RequestData"))
+            requestType = requestType.replace("RequestData", "");
+
+
         // if no subject is given, send the default email
         if (requestValidation.equals("no.subjectarea")) {
             requestData.subjectarea = "keine Angabe";
             mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde kein Fach angegeben");
             if (requestData.isbn.isEmpty())
-                log.info("subject: 'no subject given', isbn: 'no isbn given', action: 'default email sent', elisa: 'not possible'");
+                logElisa("no subject given", "no isbn given", "default email sent", "not possible", requestType);
             else
-                log.info("subject: 'no subject given', isbn: " + requestData.isbn + ", action: 'default email sent', elisa: 'not possible'");
+                logElisa("no subject given",  requestData.isbn, "default email sent", "not possible", requestType);
             return ResponseEntity.ok().body("Please provide a subject");
         } else {
             // if a subject code is given, store the code in an intermediate variable, retrieve the notation group from
@@ -119,7 +126,7 @@ public class ElisaController {
             if (requestValidation.equals("no.isbn") || requestValidation.equals("invalid.isbn")) {
                 log.debug("no isbn given");
                 mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde keine ISBN angegeben");
-                log.info("subject: '" + requestData.subjectarea + "', isbn: 'no isbn given', action: 'default email sent', elisa: 'no account available'");
+                logElisa(requestData.subjectarea, "no isbn given", "default email sent", "no account available", requestType);
                 return ResponseEntity.ok().body("Please provide an ISBN");
             } else {
                 log.debug("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
@@ -134,21 +141,21 @@ public class ElisaController {
                     elisaData = this.elisaAccountService.getActiveElisaDataForSubject(notationgroupname);
                 } catch (MissingElisaAccountException meae) {
                     mailSenderService.sendEavMail(requestData, defaultEavEmail, "Zu diesem Fach konnte kein ELi:SA Account gefunden werden.");
-                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'no account available'");
+                    logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "no account available", requestType);
                     log.debug("could not retrieve the userID for subjectArea " + notationgroupname);
                     return ResponseEntity.ok().body("could not retreive Elisa account id");
                 } catch (Exception e) {
                     mailSenderService.sendEavMail(requestData, defaultEavEmail, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
                     log.debug("could not retrieve the userID for subjectArea " + notationgroupname);
                     log.debug("the following error occurred: ", e);
-                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'no account available'");
+                    logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "no account available", requestType);
                     return ResponseEntity.ok().body("could not retreive Elisa account id");
                 }
                 String userID = elisaData.getElisaUserId();
                 if (userID == null || "".equals(userID)) {
                     log.debug("found no user id for subject area " + notationgroupname);
                     mailSenderService.sendEavMail(requestData, defaultEavEmail, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
-                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'elisa accounts incomplete'");
+                    logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "elisa accounts incomplete", requestType);
                     return ResponseEntity.ok().body("could not retreive Elisa account id");
                 }
                 log.debug("setting elisa id to " + userID);
@@ -164,12 +171,12 @@ public class ElisaController {
                 try {
                     boolean successful = elisaService.sendToElisa(createListRequest);
                     if (successful) {
-                        log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'submitted to elisa', elisa: 'success'");
+                        logElisa(requestData.subjectarea, requestData.isbn, "submitted to elisa", "success", requestType);
                         mailSenderService.sendNotificationMail(requestData, elisaData.getElisaUserId(), elisaData.getElisaName());
                         return ResponseEntity.ok().build();
                     }
                     else {
-                        log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'eav mail sent', elisa: 'title not in elisa'");
+                        logElisa(requestData.subjectarea, requestData.isbn, "eav mail sent", "title not in elisa", requestType);
                         mailSenderService.sendEavMail(requestData, defaultEavEmail, "Der Titel ist nicht in ELi:SA enthalten.");
                         return ResponseEntity.badRequest().build();
                     }
@@ -177,17 +184,17 @@ public class ElisaController {
                 } catch (AlreadyContainedException ace) {
                     log.debug("title already on list.");
                     mailSenderService.sendAlreadyContainedMail(requestData, userID, elisaData.getElisaName());
-                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'already contained email sent', elisa: 'already on list'");
+                    logElisa(requestData.subjectarea, requestData.isbn, "already contained email sent", "already on list", requestType);
                     return ResponseEntity.ok().body("title already on list.");
                 } catch (ElisaAuthenticationException eae) {
                     log.error("elisa authentication failed. Reason: " + eae.getMessage());
                     mailSenderService.sendEavMail(requestData, defaultEavEmail, "Die ELi:SA -Authentifizierung ist fehlgeschlagen");
-                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'authentication failed'");
+                    logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "authentication failed", requestType);
                     return ResponseEntity.ok().body("no token received");
                 } catch (InvalidIsbnException iie) {
                     log.error("isbn with errors. Reason: " + iie.getMessage());
                     mailSenderService.sendEavMail(requestData, defaultEavEmail, "Die ISBN konnte nciht in ELi:SA gefunden werden.");
-                    log.info("subject: '" + requestData.subjectarea + "', isbn: '" + requestData.isbn + "', action: 'default email sent', elisa: 'isbn with errors'");
+                    logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "isbn with errors", requestType);
                     return ResponseEntity.ok().body("isbn with errors");
                 }
             }
