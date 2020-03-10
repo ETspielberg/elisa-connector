@@ -92,7 +92,7 @@ public class ElisaController {
     public ResponseEntity<?> receiveEav(@RequestBody RequestData requestData) {
         // validate the request
         String requestValidation = requestValidatorService.validate(requestData);
-        log.info(requestValidation);
+        log.debug(requestValidation);
 
         // if no subject is given, send the default email
         if (requestValidation.equals("no.subjectarea")) {
