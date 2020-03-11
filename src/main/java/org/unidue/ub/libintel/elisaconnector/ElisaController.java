@@ -126,7 +126,7 @@ public class ElisaController {
             if (requestValidation.equals("no.isbn") || requestValidation.equals("invalid.isbn")) {
                 log.debug("no isbn given");
                 mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde keine ISBN angegeben");
-                logElisa(requestData.subjectarea, "no isbn given", "default email sent", "no account available", requestType);
+                logElisa(requestData.subjectarea, "no isbn given", "default email sent", "not possible", requestType);
                 return ResponseEntity.ok().body("Please provide an ISBN");
             } else {
                 log.debug("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
@@ -155,7 +155,7 @@ public class ElisaController {
                 if (userID == null || "".equals(userID)) {
                     log.debug("found no user id for subject area " + notationgroupname);
                     mailSenderService.sendEavMail(requestData, defaultEavEmail, "Der zuständige ELi:SA Account konnte nicht gefunden werden");
-                    logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "elisa accounts incomplete", requestType);
+                    logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "elisa account incomplete", requestType);
                     return ResponseEntity.ok().body("could not retreive Elisa account id");
                 }
                 log.debug("setting elisa id to " + userID);
