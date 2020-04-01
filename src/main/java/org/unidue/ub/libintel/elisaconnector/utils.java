@@ -21,6 +21,7 @@ public class utils {
         context.setVariable("name", requestData.name);
         context.setVariable("libraryaccountNumber", requestData.libraryaccountNumber);
         context.setVariable("emailAddress", requestData.emailAddress);
+        context.setVariable("ebookDesired", requestData.ebookDesired);
         return context;
     }
 

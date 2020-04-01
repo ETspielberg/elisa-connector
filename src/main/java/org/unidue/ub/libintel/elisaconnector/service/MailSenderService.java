@@ -14,10 +14,6 @@ import org.unidue.ub.libintel.elisaconnector.model.RequestDataUser;
 @Service
 public class MailSenderService {
 
-    // the standard email address to send mails if elisa submission does not work
-    @Value("${libintel.eavs.email.default}")
-    private String defaultEavEmail;
-
     // the email address to appear as "from"
     @Value("${libintel.eavs.email.from}")
     private String eEavEmailFrom;
@@ -40,6 +36,34 @@ public class MailSenderService {
         this.emailSender = emailSender;
         this.userMailCreationService = userMailCreationService;
         this.lecturerMailCreationService = lecturerMailCreationService;
+    }
+
+    public void sendEbookMail(RequestData requestData, String to, String name) {
+        String requestType = requestData.getClass().getSimpleName();
+        MimeMessagePreparator messagePreparator = mimeMessage -> {
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
+            messageHelper.setFrom(eEavEmailFrom);
+            messageHelper.setTo(to);
+            String text;
+            switch (requestType) {
+                case "RequestDataUser": {
+                    MailBuilder<RequestDataUser> mailBuilder = new MailBuilder<>(userMailCreationService);
+                    text = mailBuilder.buildEbookMail(name, (RequestDataUser) requestData);
+                    messageHelper.setSubject("neuer E-Book-Anschaffungsvorschlag eines Studierenden/Externen in ELi:SA");
+                    break;
+                }
+                default: {
+                    MailBuilder<RequestDataLecturer> mailBuilder = new MailBuilder<>(lecturerMailCreationService);
+                    text = mailBuilder.buildEbookMail(name, (RequestDataLecturer) requestData);
+                    messageHelper.setSubject("neuer E-Book-Anschaffungsvorschlag eines Lehrenden in ELi:SA");
+                    break;
+                }
+            }
+
+            messageHelper.setText(text, true);
+        };
+        emailSender.send(messagePreparator);
+        log.debug("sent email to " + to);
     }
 
     public void sendNotificationMail(RequestData requestData, String to, String name) {

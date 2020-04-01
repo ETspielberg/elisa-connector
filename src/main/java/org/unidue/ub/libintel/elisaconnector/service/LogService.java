@@ -3,9 +3,9 @@ package org.unidue.ub.libintel.elisaconnector.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LogServie {
+public class LogService {
 
-    private final static Logger log = LoggerFactory.getLogger(LogServie.class);
+    private final static Logger log = LoggerFactory.getLogger(LogService.class);
 
     private final static String logText = "subject: '%s', isbn: '%s', action: '%s', elisa: '%s', type: '%s'";
 

@@ -19,4 +19,8 @@ class MailBuilder<T> {
     String buildEavMail(String reason, T requestData) {
         return mailCreationService.buildEavMail(reason, requestData);
     }
+
+    String buildEbookMail(String reason, T requestData) {
+        return mailCreationService.buildEbookMail(reason, requestData);
+    }
 }

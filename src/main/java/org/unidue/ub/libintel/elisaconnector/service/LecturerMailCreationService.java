@@ -45,4 +45,13 @@ public class LecturerMailCreationService implements MailCreationService<RequestD
         context.setVariable("mailType", "lecturer");
         return templateEngine.process("notificationMailTemplate", context);
     }
+
+    @Override
+    public String buildEbookMail(String reason, RequestDataLecturer requestDataLecturer) {
+        Context context = setGeneralVariables(requestDataLecturer);
+        setLecturerSpecificVariables(context, requestDataLecturer);
+        context.setVariable("reason", reason);
+        context.setVariable("mailType", "lecturer");
+        return templateEngine.process("ebookMailTemplate", context);
+    }
 }

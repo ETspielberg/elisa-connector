@@ -7,4 +7,6 @@ public interface MailCreationService<T> {
     String buildAlreadyContainedMal(String name, T t);
 
     String buildNotificationMail(String reason, T t);
+
+    String buildEbookMail(String reason, T t);
 }

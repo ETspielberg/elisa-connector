@@ -29,6 +29,15 @@ public class UserMailCreationService implements MailCreationService<RequestDataU
     }
 
     @Override
+    public String buildEbookMail(String reason, RequestDataUser requestDataUser) {
+        Context context = setGeneralVariables(requestDataUser);
+        setUserSpecificVariables(context, requestDataUser);
+        context.setVariable("reason", reason);
+        context.setVariable("mailType", "user");
+        return templateEngine.process("ebookMailTemplate", context);
+    }
+
+    @Override
     public String buildAlreadyContainedMal(String name, RequestDataUser requestDataUser) {
         Context context = setGeneralVariables(requestDataUser);
         setUserSpecificVariables(context, requestDataUser);

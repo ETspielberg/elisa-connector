@@ -14,10 +14,11 @@ public class RequestData {
     public  String name;
     public  String libraryaccountNumber;
     public  String emailAddress;
+    public boolean ebookDesired;
 
     public RequestData() {}
 
-    public RequestData(String isbn, String title, String contributor, String edition, String publisher, String year, String price, String subjectarea, String comment, String name, String libraryaccountNumber, String emailAddress) {
+    public RequestData(String isbn, String title, String contributor, String edition, String publisher, String year, String price, String subjectarea, String comment, String name, String libraryaccountNumber, String emailAddress, boolean ebookDesired) {
         this.isbn = isbn;
         this.title = title;
         this.contributor = contributor;
@@ -30,6 +31,7 @@ public class RequestData {
         this.name = name;
         this.libraryaccountNumber = libraryaccountNumber;
         this.emailAddress = emailAddress;
+        this.ebookDesired = ebookDesired;
     }
 }
 

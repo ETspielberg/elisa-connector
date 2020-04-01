@@ -24,6 +24,14 @@
 <p> Hallo <span th:text="${to}"></span>,</p>
 <p class="text">Ein Titel, der berits auf der Merliste "Anschffungsvorschläge" enthalten ist, wurde ein weiteres Mal vorgeschlagen:</p>
 <p><span th:text="${contributor}"></span>: "<span th:text="${title}"></span>" (ISBN: <span th:text="${isbn}"></span>) </p>
+
+<div th:if="${isbn != ''}">
+    <a th:href="@{'https://primo.ub.uni-due.de/primo-explore/search?query=isbn,contains,'+${isbn}+',AND&tab=default_tab&search_scope=default_scope&sortby=rank&vid=UDE_NUI&lang=de_DE&mode=advanced&offset=0'}"><button>Suche in Primo nach ISBN</button></a>
+</div>
+<div>
+    <a th:href="@{'https://primo.ub.uni-due.de/primo-explore/search?query=creator,contains,' + ${contributor} + ',AND&query=title,contains,' + ${title} + ',AND&tab=default_tab&search_scope=default_scope&sortby=rank&vid=UDE_NUI&lang=de_DE&mode=advanced&offset=0'}"><button>Suche in Primo nach Autor + Title</button></a>
+</div>
+
 <p> Dieser Titel wurde von <span th:text="${name}"></span> (<span th:text="${libraryaccountNumber}"></span>) vorgeschlagen mit folgenden Zusatzangaben vorgeschlage:</p>
 <table>
     <<tr>

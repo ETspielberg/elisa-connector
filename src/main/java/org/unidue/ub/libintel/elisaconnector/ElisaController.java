@@ -16,7 +16,7 @@ import org.unidue.ub.libintel.elisaconnector.exceptions.MissingElisaAccountExcep
 import org.unidue.ub.libintel.elisaconnector.model.*;
 import org.unidue.ub.libintel.elisaconnector.service.*;
 
-import static org.unidue.ub.libintel.elisaconnector.service.LogServie.logElisa;
+import static org.unidue.ub.libintel.elisaconnector.service.LogService.logElisa;
 
 /**
  * provides endpoints to wrap the ELi:SA API.
@@ -29,6 +29,9 @@ public class ElisaController {
     // the standard email address to send mails if elisa submission does not work
     @Value("${libintel.eavs.email.default}")
     private String defaultEavEmail;
+
+    @Value("${libintel.ebooks.email.default}")
+    private String defaultEbookEmail;
 
     private final MailSenderService mailSenderService;
 
@@ -100,15 +103,44 @@ public class ElisaController {
         if (requestType.contains("RequestData"))
             requestType = requestType.replace("RequestData", "");
 
+        log.debug("ebook desired: " + requestData.ebookDesired);
+        /*
+        if (requestData.ebookDesired) {
+            mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "Es wurde kein Fach angegeben");
+            if (requestValidation.equals("no.subjectarea")) {
+                requestData.subjectarea = "keine Angabe";
+                if (requestData.isbn.isEmpty())
+                    logElisa("no subject given", "no isbn given", "default ebook email sent", "not possible", requestType);
+                else
+                    logElisa("no subject given",  requestData.isbn, "default ebook email sent", "not possible", requestType);
+                return ResponseEntity.ok().body("Please provide a subject");
+            } else {
+                if (requestData.isbn.isEmpty())
+                    logElisa(requestData.subjectarea, "no isbn given", "default ebook email sent", "not possible", requestType);
+                else
+                    logElisa(requestData.subjectarea,  requestData.isbn, "default ebook email sent", "not possible", requestType);
+            }
+            ResponseEntity.ok().body("e-book mail sent.");
+        }
+        */
 
         // if no subject is given, send the default email
         if (requestValidation.equals("no.subjectarea")) {
+            // set subjectarea to 'keine Angabe' for the mail generation
             requestData.subjectarea = "keine Angabe";
-            mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde kein Fach angegeben");
-            if (requestData.isbn.isEmpty())
-                logElisa("no subject given", "no isbn given", "default email sent", "not possible", requestType);
+
+            // send either ebook mail or print mail
+            if (requestData.ebookDesired)
+                mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "Es wurde kein Fach angegeben");
             else
-                logElisa("no subject given",  requestData.isbn, "default email sent", "not possible", requestType);
+                mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde kein Fach angegeben");
+
+            // prepare strings for log message
+            String action = requestData.ebookDesired ? "default ebook email sent" : "default email sent";
+            String isbnMessage = requestData.isbn.isEmpty() ? "no isbn given" : requestData.isbn;
+
+            // write log message for statistical purposes
+            logElisa("no subject given", isbnMessage, action, "not possible", requestType);
             return ResponseEntity.ok().body("Please provide a subject");
         } else {
             // if a subject code is given, store the code in an intermediate variable, retrieve the notation group from
@@ -125,11 +157,21 @@ public class ElisaController {
             // if no isbn is given send the default mail with the speaking name of the subject to default address
             if (requestValidation.equals("no.isbn") || requestValidation.equals("invalid.isbn")) {
                 log.debug("no isbn given");
-                mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde keine ISBN angegeben");
-                logElisa(requestData.subjectarea, "no isbn given", "default email sent", "not possible", requestType);
+                String action = requestData.ebookDesired ? "default ebook email sent" : "default email sent";
+                if (requestData.ebookDesired)
+                    mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "Es wurde keine ISBN angegeben");
+                else
+                    mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde keine ISBN angegeben");
+                logElisa(requestData.subjectarea, "no isbn given", action, "not possible", requestType);
                 return ResponseEntity.ok().body("Please provide an ISBN");
             } else {
-                log.debug("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
+                if (requestData.ebookDesired) {
+                    log.debug("received Request to obtain ISBN " + requestData.isbn + "as ebook");
+                    mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "");
+                    logElisa(requestData.subjectarea, requestData.isbn, "ebook mail sent", "not applicable", requestType);
+                    return ResponseEntity.ok().body("ebook mail sent");
+                } else
+                    log.debug("received Request to send ISBN " + requestData.isbn + "to ELi:SA");
 
                 // process requests with isbns and subject areas present
                 // remove hyphens if present

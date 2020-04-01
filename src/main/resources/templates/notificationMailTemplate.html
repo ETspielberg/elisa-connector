@@ -27,6 +27,14 @@
 <p>Hallo <span th:text="${to}"></span></p>
 <p class="text"><span th:text="${name}"></span> (<span th:text="${emailAddress}"></span>) hat einen neuen Anschaffungsvorschlag eingereicht:</p>
 <h3><span th:text="${contributor}"></span>: "<span th:text="${title}"></span>"</h3>
+
+<div th:if="${isbn != ''}">
+    <a th:href="@{'https://primo.ub.uni-due.de/primo-explore/search?query=isbn,contains,'+${isbn}+',AND&tab=default_tab&search_scope=default_scope&sortby=rank&vid=UDE_NUI&lang=de_DE&mode=advanced&offset=0'}"><button>Suche in Primo nach ISBN</button></a>
+</div>
+<div>
+    <a th:href="@{'https://primo.ub.uni-due.de/primo-explore/search?query=creator,contains,' + ${contributor} + ',AND&query=title,contains,' + ${title} + ',AND&tab=default_tab&search_scope=default_scope&sortby=rank&vid=UDE_NUI&lang=de_DE&mode=advanced&offset=0'}"><button>Suche in Primo nach Autor + Title</button></a>
+</div>
+
 <th:block th:switch="${mailType}">
     <div th:case="user">
         <p>Literaturquelle: <span th:text="${source}"></span></p>
@@ -58,10 +66,10 @@
 
 
 <p>
-    <a th:href="@{'mailto:'+${emailAddress}+'?subject=Ihr%20Anschaffungsvorschlag&body=Sehr%20geehrte(r)%20Herr/Frau%20'+${name}+'%2C%0A%0Avielen%20Dank%20f%C3%BCr%20Ihren%20Anschaffungsvorschlag.%0AIch%20freue%20mich%2C%20Ihnen%20mitteilen%20zu%20k%C3%B6nnen%2C%20dass%20der%20Titel%0A%22'+${title}+'%22%0Abestellt%20worden%20ist.%20Wenn%20Sie%20im%20Anschaffungsformular%20die%20Option%20%E2%80%9EVormerkung%E2%80%9C%20ausgew%C3%A4hlt%20haben%2C%20erhalten%20Sie%20eine%20Benachrichtigung%20per%20E-Mail%2C%20sobald%20Sie%20das%20Buch%20abholen%20k%C3%B6nnen.%20%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%2C%0A%0A'+${to}+'%0AFachreferat%20'+${subjectarea}}">Anschaffung bestätigen</a>
+    <a th:href="@{'mailto:'+${emailAddress}+'?subject=Ihr%20Anschaffungsvorschlag&body=Sehr%20geehrte(r)%20'+${name}+'%2C%0A%0Avielen%20Dank%20f%C3%BCr%20Ihren%20Anschaffungsvorschlag.%0AIch%20freue%20mich%2C%20Ihnen%20mitteilen%20zu%20k%C3%B6nnen%2C%20dass%20der%20Titel%0A%22'+${title}+'%22%0Abestellt%20worden%20ist.%20Wenn%20Sie%20im%20Anschaffungsformular%20die%20Option%20%E2%80%9EVormerkung%E2%80%9C%20ausgew%C3%A4hlt%20haben%2C%20erhalten%20Sie%20eine%20Benachrichtigung%20per%20E-Mail%2C%20sobald%20Sie%20das%20Buch%20abholen%20k%C3%B6nnen.%20%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%2C%0A%0A'+${to}+'%0AFachreferat%20'+${subjectarea}}">Anschaffung bestätigen</a>
 </p>
 <p>
-    <a th:href="@{'mailto:'+${emailAddress}+'?subject=Ihr%20Anschaffungsvorschlag&body=Sehr%20geehrte(r)%20Herr/Frau%20'+${name} + '%2C%0A%0Avielen%20Dank%20f%C3%BCr%20Ihren%20Anschaffungsvorschlag%2C%20den%20ich%20leider%20ablehnen%20muss.%0ADer%20Titel%0A%22'+${title}+'%22%0Aentspricht%20nicht%20unserem%20Anschaffungsprofil%20und%20kann%20deshalb%20nicht%20von%20uns%20bestellt%20werden.%0AF%C3%BCr%20Fragen%20stehe%20ich%20Ihnen%20gerne%20zur%20Verf%C3%BCgung.%20%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%2C%0A%0A'+${to}+'%0AFachreferat%20'+${subjectarea}}">Anschaffung ablehnen</a>
+    <a th:href="@{'mailto:'+${emailAddress}+'?subject=Ihr%20Anschaffungsvorschlag&body=Sehr%20geehrte(r)%20'+${name} + '%2C%0A%0Avielen%20Dank%20f%C3%BCr%20Ihren%20Anschaffungsvorschlag%2C%20den%20ich%20leider%20ablehnen%20muss.%0ADer%20Titel%0A%22'+${title}+'%22%0Aentspricht%20nicht%20unserem%20Anschaffungsprofil%20und%20kann%20deshalb%20nicht%20von%20uns%20bestellt%20werden.%0AF%C3%BCr%20Fragen%20stehe%20ich%20Ihnen%20gerne%20zur%20Verf%C3%BCgung.%20%0A%0AMit%20freundlichen%20Gr%C3%BC%C3%9Fen%2C%0A%0A'+${to}+'%0AFachreferat%20'+${subjectarea}}">Anschaffung ablehnen</a>
 </p>
 <a href="https://elisa.hbz-nrw.de/notepads"><strong>Hier</strong></a> geht es direkt zu den ELi:SA-Merklisten.
 <p>Viele Grüße,</p>
