@@ -6,6 +6,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * configuration for the Feign clients to allow for basic authentication upon the requests to the settings backend
+ * within the libintel architecture.
+ */
 public class FeignConfiguration {
 
     @Value("${spring.security.user.name}")

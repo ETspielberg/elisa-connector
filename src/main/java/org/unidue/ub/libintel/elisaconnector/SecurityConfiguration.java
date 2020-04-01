@@ -4,6 +4,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
+/**
+ * general Web security configuration for Spring Security, opening the ports for the submission of purchase requests.
+ */
 @Configuration
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 

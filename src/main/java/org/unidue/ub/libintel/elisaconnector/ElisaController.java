@@ -14,6 +14,9 @@ import org.unidue.ub.libintel.elisaconnector.exceptions.ElisaAuthenticationExcep
 import org.unidue.ub.libintel.elisaconnector.exceptions.InvalidIsbnException;
 import org.unidue.ub.libintel.elisaconnector.exceptions.MissingElisaAccountException;
 import org.unidue.ub.libintel.elisaconnector.model.*;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.CreateListRequest;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.Title;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.TitleData;
 import org.unidue.ub.libintel.elisaconnector.service.*;
 
 import static org.unidue.ub.libintel.elisaconnector.service.LogService.logElisa;
@@ -30,6 +33,7 @@ public class ElisaController {
     @Value("${libintel.eavs.email.default}")
     private String defaultEavEmail;
 
+    // the email address to send mails when electronic media arte requested
     @Value("${libintel.ebooks.email.default}")
     private String defaultEbookEmail;
 
@@ -104,25 +108,6 @@ public class ElisaController {
             requestType = requestType.replace("RequestData", "");
 
         log.debug("ebook desired: " + requestData.ebookDesired);
-        /*
-        if (requestData.ebookDesired) {
-            mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "Es wurde kein Fach angegeben");
-            if (requestValidation.equals("no.subjectarea")) {
-                requestData.subjectarea = "keine Angabe";
-                if (requestData.isbn.isEmpty())
-                    logElisa("no subject given", "no isbn given", "default ebook email sent", "not possible", requestType);
-                else
-                    logElisa("no subject given",  requestData.isbn, "default ebook email sent", "not possible", requestType);
-                return ResponseEntity.ok().body("Please provide a subject");
-            } else {
-                if (requestData.isbn.isEmpty())
-                    logElisa(requestData.subjectarea, "no isbn given", "default ebook email sent", "not possible", requestType);
-                else
-                    logElisa(requestData.subjectarea,  requestData.isbn, "default ebook email sent", "not possible", requestType);
-            }
-            ResponseEntity.ok().body("e-book mail sent.");
-        }
-        */
 
         // if no subject is given, send the default email
         if (requestValidation.equals("no.subjectarea")) {
@@ -131,7 +116,7 @@ public class ElisaController {
 
             // send either ebook mail or print mail
             if (requestData.ebookDesired)
-                mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "Es wurde kein Fach angegeben");
+                mailSenderService.sendEbookMail(requestData, defaultEbookEmail);
             else
                 mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde kein Fach angegeben");
 
@@ -159,7 +144,7 @@ public class ElisaController {
                 log.debug("no isbn given");
                 String action = requestData.ebookDesired ? "default ebook email sent" : "default email sent";
                 if (requestData.ebookDesired)
-                    mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "Es wurde keine ISBN angegeben");
+                    mailSenderService.sendEbookMail(requestData, defaultEbookEmail);
                 else
                     mailSenderService.sendEavMail(requestData, defaultEavEmail, "Es wurde keine ISBN angegeben");
                 logElisa(requestData.subjectarea, "no isbn given", action, "not possible", requestType);
@@ -167,7 +152,7 @@ public class ElisaController {
             } else {
                 if (requestData.ebookDesired) {
                     log.debug("received Request to obtain ISBN " + requestData.isbn + "as ebook");
-                    mailSenderService.sendEbookMail(requestData, defaultEbookEmail, "");
+                    mailSenderService.sendEbookMail(requestData, defaultEbookEmail);
                     logElisa(requestData.subjectarea, requestData.isbn, "ebook mail sent", "not applicable", requestType);
                     return ResponseEntity.ok().body("ebook mail sent");
                 } else
@@ -243,7 +228,6 @@ public class ElisaController {
         }
     }
 
-
     /**
      * direct wrapper for the ELi:SA API. handles authentication etc. credentials remain stored in the secured config server.
      *
@@ -259,6 +243,5 @@ public class ElisaController {
             return ResponseEntity.ok().build();
         else
             return ResponseEntity.badRequest().build();
-
     }
 }

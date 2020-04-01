@@ -1,5 +1,9 @@
-package org.unidue.ub.libintel.elisaconnector.model;
+package org.unidue.ub.libintel.elisaconnector.model.elisa;
 
+/**
+ * Response object to authentication call to ELi:SA. contains the token to be used for further requests and possibly
+ * the error messages if the authentication request failed.
+ */
 public class AuthenticationResponse {
 
     private int errorcode;

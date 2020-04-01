@@ -1,9 +1,17 @@
 package org.unidue.ub.libintel.elisaconnector.service;
 
+/**
+ * handles the creation of the appropriate mal creation services
+ * @param <T>
+ */
 class MailBuilder<T> {
 
     private MailCreationService<T> mailCreationService;
 
+    /**
+     * constructor based autowiring to mal creation service
+     * @param mailCreationService the mail creation service
+     */
     MailBuilder(MailCreationService<T> mailCreationService) {
         this.mailCreationService = mailCreationService;
     }
@@ -20,7 +28,7 @@ class MailBuilder<T> {
         return mailCreationService.buildEavMail(reason, requestData);
     }
 
-    String buildEbookMail(String reason, T requestData) {
-        return mailCreationService.buildEbookMail(reason, requestData);
+    String buildEbookMail(T requestData) {
+        return mailCreationService.buildEbookMail(requestData);
     }
 }

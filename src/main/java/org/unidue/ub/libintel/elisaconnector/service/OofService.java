@@ -8,6 +8,9 @@ import microsoft.exchange.webservices.data.credential.WebCredentials;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * checks the out of office notifications from the microsoft exchange server
+ */
 //@Service
 public class OofService {
 

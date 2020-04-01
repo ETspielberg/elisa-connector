@@ -5,6 +5,9 @@ import org.unidue.ub.libintel.elisaconnector.model.RequestData;
 
 import java.util.regex.Pattern;
 
+/**
+ * validates a submitted purchase request
+ */
 @Service
 public class RequestValidatorService {
 

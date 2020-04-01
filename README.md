@@ -16,9 +16,11 @@ libintel.elisa.callerid=<elisa caller id (vom hbz)>
 libintel.elisa.secret=<elisa secret (vom hbz)>
 libintel.elisa.userid.default=<elisa userid wenn kein Fach ausgewählt wurde>
 libintel.eavs.email.default=<Standard-E-Mail, wenn der Eintrag in Elisa keinen Erfolg hatte>
+libintel.eavs.email.from=<Die Adresse, die als Absender der E-Mails erscheint>
+libintel.ebooks.email.default=<Die Adresse, an die E-Book-Anschaffungswünsche gesendet werden sollen>
 ```
 
-Ist ein entsprechender Kexystore vorhanden, können diese auch verschlüsselt abgelegt werden.
+Ist ein entsprechender Keystore vorhanden, können diese auch verschlüsselt abgelegt werden.
 
 Der Elisa-Connector benötigt weiterhin einen Eureka-Server als Discovery-Service und einen Settings-Server, der die Zuordnung der userIDs zu den Fächer enthält.
 

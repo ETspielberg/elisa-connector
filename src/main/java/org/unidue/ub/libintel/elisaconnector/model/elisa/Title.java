@@ -1,5 +1,8 @@
-package org.unidue.ub.libintel.elisaconnector.model;
+package org.unidue.ub.libintel.elisaconnector.model.elisa;
 
+/**
+ * a title object holding the title data for a single book
+ */
 public class Title {
 
     private TitleData title;

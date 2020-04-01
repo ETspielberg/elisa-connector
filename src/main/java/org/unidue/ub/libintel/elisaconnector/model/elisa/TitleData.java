@@ -1,7 +1,11 @@
-package org.unidue.ub.libintel.elisaconnector.model;
+package org.unidue.ub.libintel.elisaconnector.model.elisa;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * metadata for a single entry in the memory list in elisa. It holds the isbn of the book to be added to the memory
+ * list, the inter note as well as the library note.
+ */
 public class TitleData {
 
     private String isbn;
@@ -14,6 +18,9 @@ public class TitleData {
     public TitleData() {
     }
 
+    /**
+     * @param isbn the isbn of the book to be added to the memory list
+     */
     public TitleData(String isbn) {
         this.notizIntern = "";
         this.notiz = "";

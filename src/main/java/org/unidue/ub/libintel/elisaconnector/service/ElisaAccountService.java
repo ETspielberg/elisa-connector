@@ -8,15 +8,27 @@ import org.unidue.ub.libintel.elisaconnector.model.ElisaData;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * handles the retrieval of the elisa account to be used
+ */
 @Service
 public class ElisaAccountService {
 
     private SubjectClient subjectClient;
 
+    /**
+     * constructor based autowiring to the subject client
+     * @param subjectClient the Feign subject client bean
+     */
     public ElisaAccountService(SubjectClient subjectClient) {
         this.subjectClient = subjectClient;
     }
 
+    /**
+     * retrieves all elisa data for a given subject and returns the one with the highest priority.
+     * @param notationgroupname the subject code
+     * @return the active elisa data
+     */
     public ElisaData getActiveElisaDataForSubject(String notationgroupname) {
         List<ElisaData> allData = subjectClient.getElisaAccountForSubject(notationgroupname);
         if (allData.size() == 0)

@@ -8,5 +8,5 @@ public interface MailCreationService<T> {
 
     String buildNotificationMail(String reason, T t);
 
-    String buildEbookMail(String reason, T t);
+    String buildEbookMail(T t);
 }

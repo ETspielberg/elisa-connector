@@ -1,7 +1,7 @@
 package org.unidue.ub.libintel.elisaconnector.model;
 
 /**
- * Plain old java object holding a subject and the corresponding description
+ * POJO holding a subject area code and the corresponding speaking description
  * 
  * @author Eike Spielberg
  * @version 1

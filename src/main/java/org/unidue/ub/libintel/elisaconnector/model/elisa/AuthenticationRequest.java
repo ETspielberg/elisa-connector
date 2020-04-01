@@ -1,4 +1,4 @@
-package org.unidue.ub.libintel.elisaconnector.model;
+package org.unidue.ub.libintel.elisaconnector.model.elisa;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.springframework.util.DigestUtils;
@@ -8,7 +8,10 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+/**
+ * Request object to authenticate at ELi:SA. The timestamps and hash are calculated automatically.
+*/
+ @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class AuthenticationRequest {
 
     private String callerID;
@@ -18,8 +21,6 @@ public class AuthenticationRequest {
     private String hash;
 
     /**
-     * Request object to authentificate at ELi:SA. The timestamps and hash are calculated by default.
-     *
      * @param callerID the caller ID provided by the hbz
      * @param secret the secrtet provided by the hbz
      */

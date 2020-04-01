@@ -11,6 +11,9 @@ import org.unidue.ub.libintel.elisaconnector.model.RequestData;
 import org.unidue.ub.libintel.elisaconnector.model.RequestDataLecturer;
 import org.unidue.ub.libintel.elisaconnector.model.RequestDataUser;
 
+/**
+ * handles the sending of mails
+ */
 @Service
 public class MailSenderService {
 
@@ -27,6 +30,12 @@ public class MailSenderService {
     private static final Logger log = LoggerFactory.getLogger(MailSenderService.class);
 
 
+    /**
+     * constructor based autowiring of email sender and the appropriate mail creation services.
+     * @param emailSender the mail sender service as instantiated from the config properties
+     * @param userMailCreationService the mail creation service handling the mails for purchase requests from users
+     * @param lecturerMailCreationService the mail creation service handling the mails for purchase requests from lecturers
+     */
     MailSenderService(
             // error on unknown bean for emailSender can be ignored, emailSender bean is created from configuration properties
             JavaMailSender emailSender,
@@ -38,7 +47,12 @@ public class MailSenderService {
         this.lecturerMailCreationService = lecturerMailCreationService;
     }
 
-    public void sendEbookMail(RequestData requestData, String to, String name) {
+    /**
+     * sends the mail, if an ebook is requested
+     * @param requestData the purchase request data
+     * @param to the recipient of the email
+     */
+    public void sendEbookMail(RequestData requestData, String to) {
         String requestType = requestData.getClass().getSimpleName();
         MimeMessagePreparator messagePreparator = mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
@@ -48,13 +62,13 @@ public class MailSenderService {
             switch (requestType) {
                 case "RequestDataUser": {
                     MailBuilder<RequestDataUser> mailBuilder = new MailBuilder<>(userMailCreationService);
-                    text = mailBuilder.buildEbookMail(name, (RequestDataUser) requestData);
+                    text = mailBuilder.buildEbookMail((RequestDataUser) requestData);
                     messageHelper.setSubject("neuer E-Book-Anschaffungsvorschlag eines Studierenden/Externen in ELi:SA");
                     break;
                 }
                 default: {
                     MailBuilder<RequestDataLecturer> mailBuilder = new MailBuilder<>(lecturerMailCreationService);
-                    text = mailBuilder.buildEbookMail(name, (RequestDataLecturer) requestData);
+                    text = mailBuilder.buildEbookMail((RequestDataLecturer) requestData);
                     messageHelper.setSubject("neuer E-Book-Anschaffungsvorschlag eines Lehrenden in ELi:SA");
                     break;
                 }
@@ -66,6 +80,12 @@ public class MailSenderService {
         log.debug("sent email to " + to);
     }
 
+    /**
+     * sends the notification mail, that a new title has been successfully submitted to elisa
+     * @param requestData the purchase request data
+     * @param to the email address of the recipient
+     * @param name the name of the recipient
+     */
     public void sendNotificationMail(RequestData requestData, String to, String name) {
         String requestType = requestData.getClass().getSimpleName();
         MimeMessagePreparator messagePreparator = mimeMessage -> {
@@ -94,6 +114,12 @@ public class MailSenderService {
         log.debug("sent email to " + to);
     }
 
+    /**
+     * sends the eav mail if the title could not be submitted to elisa
+     * @param requestData the purchase request data
+     * @param to the email address of the recipient
+     * @param reason the reason why the title could not be submitted to elisa
+     */
     public void sendEavMail(RequestData requestData, String to, String reason) {
         String requestType = requestData.getClass().getSimpleName();
         MimeMessagePreparator messagePreparator = mimeMessage -> {
@@ -121,6 +147,12 @@ public class MailSenderService {
         log.debug("sent email to " + to);
     }
 
+    /**
+     * sends a mail, that a title was requested, which is already on an elisa memory list
+     * @param requestData the purchase request data
+     * @param to the email address of the recipient
+     * @param name  the name of the recipient
+     */
     public void sendAlreadyContainedMail(RequestData requestData, String to, String name) {
         String requestType = requestData.getClass().getSimpleName();
         MimeMessagePreparator messagePreparator = mimeMessage -> {

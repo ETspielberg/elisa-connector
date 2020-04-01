@@ -3,10 +3,18 @@ package org.unidue.ub.libintel.elisaconnector.service;
 import org.unidue.ub.libintel.elisaconnector.model.RequestData;
 import org.unidue.ub.libintel.elisaconnector.model.RequestDataLecturer;
 import org.unidue.ub.libintel.elisaconnector.model.RequestDataUser;
-import org.unidue.ub.libintel.elisaconnector.model.TitleData;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.TitleData;
 
+/**
+ * creates the title data for the elisa list creation request from the given request data
+ */
 public class ElisaTitleDataBuilder {
 
+    /**
+     * takes a request data object and returns the title data object to be submitted to elisa
+     * @param requestData the basic request data object or an extension (lecturer, user)
+     * @return the title data object in the elisa format
+     */
     public static TitleData fromRequestData(RequestData requestData){
         String className = requestData.getClass().getSimpleName();
         TitleData titleData = new TitleData(requestData.isbn);

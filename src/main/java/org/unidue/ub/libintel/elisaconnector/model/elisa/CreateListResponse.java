@@ -1,7 +1,11 @@
-package org.unidue.ub.libintel.elisaconnector.model;
+package org.unidue.ub.libintel.elisaconnector.model.elisa;
 
 import java.util.List;
 
+/**
+ * Response object to create list item in ELi:SA. contains possibly the error messages if the item or list creation has
+ * failed.
+ */
 public class CreateListResponse {
 
     private int errorcode;

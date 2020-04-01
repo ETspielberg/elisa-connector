@@ -8,13 +8,15 @@ import org.springframework.stereotype.Service;
 import org.unidue.ub.libintel.elisaconnector.client.ElisaClient;
 import org.unidue.ub.libintel.elisaconnector.exceptions.AlreadyContainedException;
 import org.unidue.ub.libintel.elisaconnector.exceptions.ElisaAuthenticationException;
-import org.unidue.ub.libintel.elisaconnector.exceptions.ElisaException;
 import org.unidue.ub.libintel.elisaconnector.exceptions.InvalidIsbnException;
-import org.unidue.ub.libintel.elisaconnector.model.AuthenticationRequest;
-import org.unidue.ub.libintel.elisaconnector.model.AuthenticationResponse;
-import org.unidue.ub.libintel.elisaconnector.model.CreateListRequest;
-import org.unidue.ub.libintel.elisaconnector.model.CreateListResponse;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.AuthenticationRequest;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.AuthenticationResponse;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.CreateListRequest;
+import org.unidue.ub.libintel.elisaconnector.model.elisa.CreateListResponse;
 
+/**
+ * handles the submission of books to elisa memory lists
+ */
 @Service
 public class ElisaService {
 
@@ -30,11 +32,23 @@ public class ElisaService {
 
     private static final Logger log = LoggerFactory.getLogger(ElisaService.class);
 
+    /**
+     * constructor based autowiring to the elisa client
+     * @param elisaClient the Feign elisa client
+     */
     public ElisaService(ElisaClient elisaClient) {
         this.elisaClient = elisaClient;
     }
 
-    public boolean sendToElisa(CreateListRequest createListRequest) throws AlreadyContainedException, ElisaAuthenticationException, ElisaException {
+    /**
+     * sends a given list creation request to elisa
+     * @param createListRequest the list creation request holding the information about memory list name, elisa account and the individual title data
+     * @return true, if the submission was successful (return status is 0)
+     * @throws AlreadyContainedException thrown, if the title is already on the list (indicated by return status, but doesn't work, need to be fixed in elisa)
+     * @throws ElisaAuthenticationException thrown, if the authentication with elisa fails
+     * @throws InvalidIsbnException thrown, if the elisa returns "invalid isbn"
+     */
+    public boolean sendToElisa(CreateListRequest createListRequest) throws AlreadyContainedException, ElisaAuthenticationException, InvalidIsbnException {
         //prepare the authentication request
         AuthenticationRequest authenticationRequest = new AuthenticationRequest(callerID, secret);
         // perform authentication
@@ -43,6 +57,7 @@ public class ElisaService {
         if (authenticationResponse.getErrorcode() == 0) {
             createListRequest.setToken(authenticationResponse.getToken());
             try {
+                // submit list creation request to elisa
                 CreateListResponse createListResponse = elisaClient.createList(createListRequest);
                 log.debug("response from elisa: " + createListResponse.getErrorcode() + "(" + createListResponse.getErrorMessage() + ")");
                 if (createListResponse.getErrorcode() == 0) {
@@ -56,7 +71,7 @@ public class ElisaService {
                 throw new InvalidIsbnException("ISBN with errors");
             }
 
-            // if authentication fails, send email to standard address
+            // if authentication fails, throw authentication exception
         } else {
             log.error("elisa authentication failed. Reason: " + authenticationResponse.getErrorMessage());
             throw new ElisaAuthenticationException("could not authenticate with elisa");
