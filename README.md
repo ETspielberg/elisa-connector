@@ -51,8 +51,8 @@ Soll der Service über Spring Security abgesichert werden, so müssen für diese
 spring:
   security:
     user:
-      name: ${libintel_system_username:thedoctor}
-      password: ${libintel_system_password:Tard15} 
+      name: <Kennung des Dienstes>
+      password: <Password des Dienstes> 
 ```
 
 Ist ein entsprechender Keystore vorhanden, können diese Properties auch verschlüsselt abgelegt werden.
