@@ -1,4 +1,4 @@
-package org.unidue.ub.libintel.elisaconnector;
+package org.unidue.ub.libintel.elisaconnector.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
