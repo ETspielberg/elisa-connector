@@ -89,6 +89,10 @@
         <th class="caption">E-Mail-Adresse</th>
         <th><span th:text="${emailAddress}"></span></th>
     </tr>
+    <tr>
+        <th class="caption">Benutzernummer</th>
+        <th><span th:text="${libraryaccountNumber}"></span></th>
+    </tr>
     <tr th:if="${mailType} eq 'user'">
         <th class="caption">Benachrichtigung über die Kaufentscheidung</th>
         <th><span th:text="${response}"></span></th>
