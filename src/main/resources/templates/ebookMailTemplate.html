@@ -95,7 +95,14 @@
     </tr>
     <tr th:if="${mailType} eq 'user'">
         <th class="caption">Benachrichtigung über die Kaufentscheidung</th>
-        <th><span th:text="${response}"></span></th>
+        <th>
+            <span th:if="${response}">Ja</span>
+            <span th:th:unless="${response}">Nein</span>
+        </th>
+    </tr>
+    <tr th:if="${mailType} eq 'lecturer'">
+        <th class="caption">Benachrichtigung über die Kaufentscheidung</th>
+        <th><span>Ja</span></th>
     </tr>
 </table>
 </div>
