@@ -68,19 +68,24 @@ public class ElisaTitleDataBuilder {
     private static void addRequestDataLecturer(TitleData titleData, RequestDataLecturer requestData) {
         String intern = "VM für ";
         if (requestData.personalAccount) {
-            intern += " perönlichen Ausweis ";
+            intern += " persönlichen Ausweis ";
 
         }
         if (requestData.happAccount) {
-            intern += " Handapparat";
+            intern += " Handapparat ";
         }
         if (requestData.semAppAccount) {
-            intern += " Semesterapparat";
+            intern += " Semesterapparat ";
         }
         intern += " erwünscht.";
         if (requestData.number > 1){
             intern += " Bitte " + requestData.number + " Exemplare bestellen.";
         }
         titleData.setNotizIntern(intern);
+        if (requestData.libraryaccountNumber != null) {
+            if (!requestData.libraryaccountNumber.isEmpty()) {
+                titleData.setNotiz("VM " + requestData.libraryaccountNumber);
+            }
+        }
     }
 }

@@ -24,7 +24,7 @@ public class RequestValidatorService {
     public String validate(RequestData requestData) {
         if (requestData.subjectarea == null || requestData.subjectarea.equals("kA") || requestData.subjectarea.trim().equals(""))
             return "no.subjectarea";
-        if (requestData.isbn == null || requestData.isbn.isEmpty())
+        if (requestData.isbn == null || requestData.isbn.strip().isEmpty())
             return "no.isbn";
         if (requestData.isbn.contains("-"))
             requestData.isbn = requestData.isbn.replace("-", "");
