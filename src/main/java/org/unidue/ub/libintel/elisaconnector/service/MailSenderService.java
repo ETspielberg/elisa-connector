@@ -63,13 +63,13 @@ public class MailSenderService {
                 case "RequestDataUser": {
                     MailBuilder<RequestDataUser> mailBuilder = new MailBuilder<>(userMailCreationService);
                     text = mailBuilder.buildEbookMail((RequestDataUser) requestData);
-                    messageHelper.setSubject("neuer E-Book-Anschaffungsvorschlag eines Studierenden/Externen in ELi:SA");
+                    messageHelper.setSubject("neuer E-Book-Vorschlag eines Studierenden/Externen");
                     break;
                 }
                 default: {
                     MailBuilder<RequestDataLecturer> mailBuilder = new MailBuilder<>(lecturerMailCreationService);
                     text = mailBuilder.buildEbookMail((RequestDataLecturer) requestData);
-                    messageHelper.setSubject("neuer E-Book-Anschaffungsvorschlag eines Lehrenden in ELi:SA");
+                    messageHelper.setSubject("neuer E-Book-Vorschlag eines Lehrenden");
                     break;
                 }
             }
@@ -97,13 +97,13 @@ public class MailSenderService {
                 case "RequestDataUser": {
                     MailBuilder<RequestDataUser> mailBuilder = new MailBuilder<>(userMailCreationService);
                     text = mailBuilder.buildNotificationMail(name, (RequestDataUser) requestData);
-                    messageHelper.setSubject("neuer E-Book-Vorschlag eines Studierenden/Externen");
+                    messageHelper.setSubject("neuer Anschaffungsvorschlag eines Studierenden/Externen in ELi:SA");
                     break;
                 }
                 default: {
                     MailBuilder<RequestDataLecturer> mailBuilder = new MailBuilder<>(lecturerMailCreationService);
                     text = mailBuilder.buildNotificationMail(name, (RequestDataLecturer) requestData);
-                    messageHelper.setSubject("neuer E-Book-Vorschlag eines Lehrenden");
+                    messageHelper.setSubject("neuer Anschaffungsvorschlag eines Lehrenden in ELi:SA");
                     break;
                 }
             }
