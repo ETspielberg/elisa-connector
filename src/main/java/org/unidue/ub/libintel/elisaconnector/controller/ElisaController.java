@@ -220,7 +220,7 @@ public class ElisaController {
                     return ResponseEntity.ok().body("no token received");
                 } catch (InvalidIsbnException iie) {
                     log.error("isbn with errors. Reason: " + iie.getMessage());
-                    mailSenderService.sendEavMail(requestData, defaultEavEmail, "Die ISBN konnte nciht in ELi:SA gefunden werden.");
+                    mailSenderService.sendEavMail(requestData, defaultEavEmail, "Die ISBN konnte nicht in ELi:SA gefunden werden.");
                     logElisa(requestData.subjectarea, requestData.isbn, "default email sent", "isbn with errors", requestType);
                     return ResponseEntity.ok().body("isbn with errors");
                 }
